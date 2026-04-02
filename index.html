@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UAP Future Demo</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0f1419;
+        --fg: #e7ecf3;
+        --muted: #8b98a5;
+        --accent: #1d9bf0;
+        --card: rgba(255, 255, 255, 0.04);
+        --border: rgba(255, 255, 255, 0.08);
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f7f9fc;
+          --fg: #0f1419;
+          --muted: #536471;
+          --accent: #1d9bf0;
+          --card: #ffffff;
+          --border: #e1e8ed;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        line-height: 1.5;
+      }
+      main {
+        max-width: 36rem;
+        width: 100%;
+        padding: 2rem;
+        border-radius: 1rem;
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.75rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+      .badge {
+        display: inline-block;
+        margin-bottom: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="badge">GitHub Pages</span>
+      <h1>UAP Future Demo</h1>
+      <p>Your site is live. Replace this page with your project content whenever you are ready.</p>
+    </main>
+  </body>
+</html>
