@@ -122,14 +122,18 @@
         box-shadow: var(--shadow), var(--shadow-inset);
       }
 
-      .hero {
+      .intro {
         width: 100%;
         margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
         padding: clamp(1.35rem, 3vw, 1.85rem) clamp(1.5rem, 3vw, 2rem);
         text-align: center;
       }
 
-      .hero h1 {
+      .intro-hero {
+        margin-bottom: clamp(1rem, 2.5vw, 1.35rem);
+      }
+
+      .intro h1 {
         margin: 0 0 0.5rem;
         font-size: clamp(1.45rem, 3.5vw, 1.85rem);
         font-weight: 700;
@@ -156,18 +160,20 @@
         color: var(--text-soft);
       }
 
-      .qr-banner {
+      html.demo-iframe .intro {
+        display: none;
+      }
+
+      .intro-qr {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 0.65rem;
-        margin-bottom: clamp(1.5rem, 3vw, 2rem);
-        padding: 1rem 1.25rem 1.15rem;
         text-align: center;
       }
 
-      .qr-banner a.qr-link {
+      button.qr-link {
         display: inline-block;
         padding: 0.5rem;
         border-radius: 0.75rem;
@@ -176,21 +182,28 @@
         box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
         line-height: 0;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+        font: inherit;
       }
 
-      .qr-banner a.qr-link:hover {
+      button.qr-link:hover {
         transform: scale(1.02);
         box-shadow: 0 8px 28px rgba(59, 91, 142, 0.15);
       }
 
-      .qr-banner img {
+      button.qr-link:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      .intro-qr img {
         display: block;
         width: min(9.5rem, 42vw);
         height: auto;
         image-rendering: pixelated;
       }
 
-      .qr-banner .qr-cta {
+      .intro-qr .qr-cta {
         margin: 0;
         font-size: 0.78rem;
         font-weight: 750;
@@ -199,15 +212,99 @@
         color: var(--text-soft);
       }
 
-      .qr-banner .qr-url {
+      .qr-caption {
+        margin: 0;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        max-width: 20rem;
+        line-height: 1.35;
+      }
+
+      .intro-qr .qr-url {
         margin: 0;
         font-size: 0.72rem;
         color: var(--text-soft);
       }
 
-      .qr-banner .qr-url a {
+      .intro-qr .qr-url-btn {
         color: var(--accent);
         font-weight: 600;
+        background: none;
+        border: none;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .intro-qr .qr-url-btn:hover {
+        color: #1d4ed8;
+      }
+
+      .demo-fullscreen-dialog {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        max-width: none;
+        height: 100%;
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: #f8fafc;
+      }
+
+      .demo-fullscreen-dialog::backdrop {
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+
+      .demo-fullscreen-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+      }
+
+      .demo-fullscreen-close {
+        position: absolute;
+        top: 0.65rem;
+        right: 0.65rem;
+        z-index: 10;
+        width: 2.65rem;
+        height: 2.65rem;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.97);
+        color: var(--text);
+        font-size: 1.4rem;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.12);
+      }
+
+      .demo-fullscreen-close:hover {
+        background: #fff;
+      }
+
+      .demo-fullscreen-close:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .demo-fullscreen-dialog iframe {
+        flex: 1;
+        width: 100%;
+        border: 0;
+        min-height: 0;
+        background: #fff;
       }
 
       .card-grid {
@@ -286,37 +383,39 @@
     </style>
   </head>
   <body>
+    <script>
+      if (window.self !== window.top) document.documentElement.classList.add("demo-iframe");
+    </script>
     <div class="scene">
       <div class="bg-grid" aria-hidden="true"></div>
       <div class="page">
-        <header class="hero glass">
-          <h1>UAP Future Demo</h1>
-          <p class="hero-line">A glimpse of UAP Future—all in one.</p>
-          <p class="hero-sub">AI everywhere</p>
-        </header>
-
-        <section class="qr-banner glass" aria-label="UAP Future Demo">
-          <p class="qr-cta">Scan to experience</p>
-          <a
-            class="qr-link"
-            href="https://heydurjoy.github.io/uapdemo/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Open UAP Future Demo (same as QR)"
-          >
-            <img
-              src="assets/faculty-recruitment-qr.png"
-              width="152"
-              height="152"
-              alt="QR code linking to UAP Future Demo"
-            />
-          </a>
-          <p class="qr-url">
-            Or open
-            <a href="https://heydurjoy.github.io/uapdemo/" target="_blank" rel="noopener noreferrer"
-              >heydurjoy.github.io/uapdemo</a
+        <section class="intro glass" aria-label="UAP Future Demo">
+          <header class="intro-hero">
+            <h1>UAP Future Demo</h1>
+            <p class="hero-line">A glimpse of UAP Future—all in one.</p>
+            <p class="hero-sub">AI everywhere</p>
+          </header>
+          <div class="intro-qr">
+            <p class="qr-cta">Scan to experience</p>
+            <button
+              type="button"
+              class="qr-link"
+              data-open-demo
+              title="Open UAP Future Demo in full screen"
             >
-          </p>
+              <img
+                src="assets/faculty-recruitment-qr.png"
+                width="152"
+                height="152"
+                alt="QR code linking to UAP Future Demo"
+              />
+            </button>
+            <p class="qr-caption">QR code linking to UAP Future Demo</p>
+            <p class="qr-url">
+              Or open
+              <button type="button" class="qr-url-btn" data-open-demo>heydurjoy.github.io/uapdemo</button>
+            </p>
+          </div>
         </section>
 
         <section class="card-grid" aria-label="Modules">
@@ -467,5 +566,42 @@
         </section>
       </div>
     </div>
+
+    <dialog id="demoFullscreen" class="demo-fullscreen-dialog" aria-label="UAP Future Demo full screen">
+      <div class="demo-fullscreen-inner">
+        <button type="button" class="demo-fullscreen-close" data-close-demo aria-label="Close full screen preview">
+          ×
+        </button>
+        <iframe title="UAP Future Demo" src="about:blank"></iframe>
+      </div>
+    </dialog>
+
+    <script>
+      (function () {
+        var DEMO_URL = "https://heydurjoy.github.io/uapdemo/";
+        var dialogEl = document.getElementById("demoFullscreen");
+        if (!dialogEl || !dialogEl.showModal) return;
+        var iframe = dialogEl.querySelector("iframe");
+        var closeBtn = dialogEl.querySelector("[data-close-demo]");
+
+        function openDemo() {
+          if (iframe && (!iframe.getAttribute("src") || iframe.getAttribute("src") === "about:blank")) {
+            iframe.src = DEMO_URL;
+          }
+          dialogEl.showModal();
+          if (closeBtn) closeBtn.focus();
+        }
+
+        document.querySelectorAll("[data-open-demo]").forEach(function (btn) {
+          btn.addEventListener("click", openDemo);
+        });
+
+        if (closeBtn) {
+          closeBtn.addEventListener("click", function () {
+            dialogEl.close();
+          });
+        }
+      })();
+    </script>
   </body>
 </html>
