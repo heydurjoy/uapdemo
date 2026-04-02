@@ -156,6 +156,60 @@
         color: var(--text-soft);
       }
 
+      .qr-banner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.65rem;
+        margin-bottom: clamp(1.5rem, 3vw, 2rem);
+        padding: 1rem 1.25rem 1.15rem;
+        text-align: center;
+      }
+
+      .qr-banner a.qr-link {
+        display: inline-block;
+        padding: 0.5rem;
+        border-radius: 0.75rem;
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+        line-height: 0;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .qr-banner a.qr-link:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 28px rgba(59, 91, 142, 0.15);
+      }
+
+      .qr-banner img {
+        display: block;
+        width: min(9.5rem, 42vw);
+        height: auto;
+        image-rendering: pixelated;
+      }
+
+      .qr-banner .qr-cta {
+        margin: 0;
+        font-size: 0.78rem;
+        font-weight: 750;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .qr-banner .qr-url {
+        margin: 0;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+      }
+
+      .qr-banner .qr-url a {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
       .card-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
@@ -240,6 +294,30 @@
           <p class="hero-line">A glimpse of UAP Future—all in one.</p>
           <p class="hero-sub">AI everywhere</p>
         </header>
+
+        <section class="qr-banner glass" aria-label="UAP Future Demo">
+          <p class="qr-cta">Scan to experience</p>
+          <a
+            class="qr-link"
+            href="https://heydurjoy.github.io/uapdemo/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open UAP Future Demo (same as QR)"
+          >
+            <img
+              src="assets/faculty-recruitment-qr.png"
+              width="152"
+              height="152"
+              alt="QR code linking to UAP Future Demo"
+            />
+          </a>
+          <p class="qr-url">
+            Or open
+            <a href="https://heydurjoy.github.io/uapdemo/" target="_blank" rel="noopener noreferrer"
+              >heydurjoy.github.io/uapdemo</a
+            >
+          </p>
+        </section>
 
         <section class="card-grid" aria-label="Modules">
           <a class="card glass card-link" href="course-files-tracker.html">

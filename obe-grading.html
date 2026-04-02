@@ -272,13 +272,13 @@
         background: rgba(37, 99, 235, 0.04);
       }
 
-      .clo-id {
+      .plo-id {
         font-weight: 700;
         color: var(--accent);
         white-space: nowrap;
       }
 
-      .clo-desc {
+      .plo-desc {
         max-width: 18rem;
         color: var(--text);
         line-height: 1.35;
@@ -387,7 +387,7 @@
         <header class="top glass">
           <div>
             <h1>OBE Based Grading</h1>
-            <p class="sub">Course grade plus CLO attempts, attainment counts, and how well each outcome was met.</p>
+            <p class="sub">Course grade plus PLO attempts, attainment counts, and how well each program outcome was met.</p>
           </div>
           <a class="back" href="index.html">← Home</a>
         </header>
@@ -397,11 +397,11 @@
         <p class="section-title">Course grade</p>
         <div class="grade-row glass" id="grade-row"></div>
 
-        <p class="section-title">Course Learning Outcomes (CLO)</p>
+        <p class="section-title">Program Learning Outcomes (PLO)</p>
         <div class="legend glass">
           <span><strong>Attempts</strong> — mapped assessments (CT, lab, mid, final, etc.)</span>
           <span><strong>Achieved</strong> — times you met the attainment threshold</span>
-          <span><strong>Attainment %</strong> — weighted performance on that CLO</span>
+          <span><strong>Attainment %</strong> — weighted performance on that PLO</span>
         </div>
 
         <div class="glass" style="padding: 0 0 0.25rem">
@@ -409,14 +409,14 @@
             <table>
               <thead>
                 <tr>
-                  <th scope="col">CLO</th>
+                  <th scope="col">PLO</th>
                   <th scope="col">Outcome</th>
                   <th scope="col">Attempts</th>
                   <th scope="col">Achieved</th>
                   <th scope="col">How well (attainment)</th>
                 </tr>
               </thead>
-              <tbody id="clo-body"></tbody>
+              <tbody id="plo-body"></tbody>
             </table>
           </div>
           <p class="note" id="footnote"></p>
@@ -441,37 +441,37 @@
       };
 
       /** @type {{ id: string, title: string, attempts: number, achieved: number, attainment: number }[]} */
-      const clos = [
+      const plos = [
         {
-          id: "CLO1",
+          id: "PLO1",
           title: "Apply software design patterns and architectural styles to medium-scale systems.",
           attempts: 6,
           achieved: 5,
           attainment: 86,
         },
         {
-          id: "CLO2",
+          id: "PLO2",
           title: "Analyze user requirements and translate them into models (UML, use cases).",
           attempts: 4,
           achieved: 4,
           attainment: 92,
         },
         {
-          id: "CLO3",
+          id: "PLO3",
           title: "Evaluate testing strategies and quality assurance practices for a given project.",
           attempts: 5,
           achieved: 3,
           attainment: 71,
         },
         {
-          id: "CLO4",
+          id: "PLO4",
           title: "Create project documentation and present design decisions to peers.",
           attempts: 3,
           achieved: 3,
           attainment: 88,
         },
         {
-          id: "CLO5",
+          id: "PLO5",
           title: "Demonstrate teamwork and version-control workflows in a collaborative codebase.",
           attempts: 8,
           achieved: 7,
@@ -516,17 +516,17 @@
           </div>`;
       }
 
-      function renderClos() {
-        const tbody = document.getElementById("clo-body");
+      function renderPlos() {
+        const tbody = document.getElementById("plo-body");
         const frag = document.createDocumentFragment();
 
-        for (const c of clos) {
+        for (const c of plos) {
           const b = bandFromAttainment(c.attainment);
           const tr = document.createElement("tr");
 
           tr.innerHTML = `
-            <td class="clo-id">${c.id}</td>
-            <td class="clo-desc">${c.title}</td>
+            <td class="plo-id">${c.id}</td>
+            <td class="plo-desc">${c.title}</td>
             <td class="num">${c.attempts}</td>
             <td class="num">${c.achieved} <span style="font-weight:500;color:var(--text-soft)">/ ${c.attempts}</span></td>
             <td>
@@ -546,13 +546,13 @@
         tbody.appendChild(frag);
 
         document.getElementById("footnote").innerHTML =
-          "<strong>Note:</strong> “Attempts” counts assessments mapped to each CLO. “Achieved” counts how many of those you reached at or above the program threshold. " +
-          "“Attainment %” is the weighted performance used for CO attainment reporting.";
+          "<strong>Note:</strong> “Attempts” counts assessments mapped to each PLO. “Achieved” counts how many of those you reached at or above the program threshold. " +
+          "“Attainment %” is the weighted performance used for PLO attainment reporting.";
       }
 
       renderStudent();
       renderGrade();
-      renderClos();
+      renderPlos();
     </script>
   </body>
 </html>
