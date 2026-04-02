@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verifiable eCertificates · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+        --ok: #059669;
+        --ok-bg: rgba(5, 150, 105, 0.12);
+        --warn: #d97706;
+        --warn-bg: rgba(217, 119, 6, 0.14);
+        --bad: #dc2626;
+        --bad-bg: rgba(220, 38, 38, 0.1);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, #e8f4ff 0%, #f0f7ff 22%, #f5f0ff 55%, #fff5f0 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(147, 197, 253, 0.55) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 15%, rgba(196, 181, 253, 0.45) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 45% at 50% 90%, rgba(253, 186, 116, 0.35) 0%, transparent 55%);
+      }
+
+      .page {
+        max-width: 40rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .top h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.2rem, 2.5vw, 1.45rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+        max-width: 28rem;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      .verify-panel {
+        padding: 1.15rem 1.25rem 1.35rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .verify-panel label {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        margin-bottom: 0.45rem;
+      }
+
+      .input-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+      }
+
+      .input-row input {
+        flex: 1;
+        min-width: 12rem;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.9rem;
+        border-radius: 0.65rem;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.75);
+        color: var(--text);
+      }
+
+      .input-row input::placeholder {
+        color: rgba(61, 74, 99, 0.55);
+      }
+
+      .input-row input:focus {
+        outline: 2px solid rgba(37, 99, 235, 0.35);
+        border-color: rgba(37, 99, 235, 0.45);
+      }
+
+      .btn {
+        padding: 0.65rem 1.15rem;
+        font-size: 0.88rem;
+        font-weight: 650;
+        color: #fff;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        border: none;
+        border-radius: 0.65rem;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      }
+
+      .btn:hover {
+        filter: brightness(1.05);
+      }
+
+      .btn:active {
+        transform: translateY(1px);
+      }
+
+      .hint {
+        margin: 0.65rem 0 0;
+        font-size: 0.78rem;
+        color: var(--text-soft);
+      }
+
+      .hint code {
+        font-size: 0.85em;
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.35rem;
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--accent);
+      }
+
+      .result {
+        margin-top: 1.25rem;
+        display: none;
+      }
+
+      .result.visible {
+        display: block;
+      }
+
+      .status-banner {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.65rem 0.85rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        font-weight: 650;
+        font-size: 0.9rem;
+      }
+
+      .status-banner.valid {
+        background: var(--ok-bg);
+        color: var(--ok);
+      }
+
+      .status-banner.revoked {
+        background: var(--bad-bg);
+        color: var(--bad);
+      }
+
+      .status-banner.unknown {
+        background: rgba(15, 23, 42, 0.06);
+        color: var(--text-soft);
+      }
+
+      .cert-card {
+        padding: 1.35rem 1.35rem 1.25rem;
+        border-radius: 1rem;
+        background: linear-gradient(165deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.95) 100%);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cert-card::before {
+        content: "";
+        position: absolute;
+        top: -40%;
+        right: -15%;
+        width: 55%;
+        height: 120%;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+        pointer-events: none;
+      }
+
+      .cert-seal {
+        font-size: 2rem;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+      }
+
+      .cert-issuer {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 0.35rem;
+      }
+
+      .cert-title {
+        margin: 0 0 0.5rem;
+        font-size: 1.15rem;
+        font-weight: 750;
+        letter-spacing: -0.02em;
+        line-height: 1.25;
+      }
+
+      .cert-holder {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px dashed rgba(15, 23, 42, 0.12);
+      }
+
+      .cert-meta {
+        display: grid;
+        gap: 0.5rem;
+        font-size: 0.82rem;
+      }
+
+      .cert-meta div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .cert-meta dt {
+        margin: 0;
+        color: var(--text-soft);
+        font-weight: 500;
+      }
+
+      .cert-meta dd {
+        margin: 0;
+        font-weight: 600;
+        text-align: right;
+      }
+
+      .fingerprint {
+        margin-top: 1rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid rgba(15, 23, 42, 0.08);
+        font-size: 0.68rem;
+        font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+        color: var(--text-soft);
+        word-break: break-all;
+        line-height: 1.4;
+      }
+
+      .fingerprint span {
+        display: block;
+        margin-top: 0.25rem;
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      .qr-placeholder {
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.65rem;
+        background: rgba(15, 23, 42, 0.04);
+        font-size: 0.75rem;
+        color: var(--text-soft);
+      }
+
+      .qr-box {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 0.35rem;
+        background: repeating-linear-gradient(
+            90deg,
+            #0f172a 0px,
+            #0f172a 3px,
+            transparent 3px,
+            transparent 6px
+          ),
+          repeating-linear-gradient(
+            0deg,
+            #0f172a 0px,
+            #0f172a 3px,
+            transparent 3px,
+            transparent 6px
+          );
+        background-size: 6px 6px;
+        background-color: #fff;
+        flex-shrink: 0;
+        opacity: 0.85;
+      }
+
+      @media (max-width: 640px) {
+        .top {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div>
+            <h1>Verifiable eCertificates</h1>
+            <p class="sub">
+              Enter a certificate ID to confirm it was issued by UAP. Results are signed and tamper-evident in this demo.
+            </p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <div class="verify-panel glass">
+          <label for="cert-id">Certificate ID</label>
+          <div class="input-row">
+            <input
+              id="cert-id"
+              type="text"
+              autocomplete="off"
+              placeholder="e.g. UAP-2025-CERT-8K2M4X"
+              spellcheck="false"
+            />
+            <button type="button" class="btn" id="verify-btn">Verify</button>
+          </div>
+          <p class="hint">
+            Try <code>UAP-2025-CERT-8K2M4X</code> (valid) or <code>UAP-2024-CERT-REVOKED</code> (revoked).
+          </p>
+
+          <div class="result" id="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const registry = {
+        "UAP-2025-CERT-8K2M4X": {
+          status: "valid",
+          credential: "Certificate of Completion — Advanced Web Systems",
+          holder: "Ayesha Khan",
+          studentId: "22101123",
+          issued: "2025-03-15",
+          expires: "2030-03-15",
+          issuer: "University of Asia Pacific",
+          fingerprint: "sha256:a7f3…9c2e (demo)",
+        },
+        "UAP-2024-CERT-REVOKED": {
+          status: "revoked",
+          reason: "Issuer revocation — credential superseded.",
+          credential: "Workshop Attendance — Data Ethics",
+          holder: "Sample Alumni",
+          revokedOn: "2025-01-10",
+        },
+      };
+
+      function normalizeId(s) {
+        return s.trim().toUpperCase();
+      }
+
+      function renderValid(c) {
+        return `
+          <div class="status-banner valid" role="status">✓ Verified — issued by UAP registry</div>
+          <div class="cert-card">
+            <div class="cert-seal" aria-hidden="true">🎖️</div>
+            <div class="cert-issuer">${escapeHtml(c.issuer)}</div>
+            <h2 class="cert-title">${escapeHtml(c.credential)}</h2>
+            <p class="cert-holder">Presented to <strong>${escapeHtml(c.holder)}</strong></p>
+            <dl class="cert-meta">
+              <div><dt>Student ID</dt><dd>${escapeHtml(c.studentId)}</dd></div>
+              <div><dt>Issued</dt><dd>${escapeHtml(c.issued)}</dd></div>
+              <div><dt>Valid until</dt><dd>${escapeHtml(c.expires)}</dd></div>
+            </dl>
+            <div class="fingerprint">
+              Public fingerprint
+              <span>${escapeHtml(c.fingerprint)}</span>
+            </div>
+            <div class="qr-placeholder">
+              <div class="qr-box" aria-hidden="true"></div>
+              <div>Scanning this QR on a printed credential would open the same verification page with this ID pre-filled.</div>
+            </div>
+          </div>`;
+      }
+
+      function renderRevoked(c) {
+        return `
+          <div class="status-banner revoked" role="status">Revoked — not valid for verification</div>
+          <div class="cert-card">
+            <div class="cert-seal" aria-hidden="true">⛔</div>
+            <div class="cert-issuer">${escapeHtml("University of Asia Pacific")}</div>
+            <h2 class="cert-title">${escapeHtml(c.credential)}</h2>
+            <p class="cert-holder">Originally issued to <strong>${escapeHtml(c.holder)}</strong></p>
+            <dl class="cert-meta">
+              <div><dt>Status</dt><dd>Revoked</dd></div>
+              <div><dt>Revoked on</dt><dd>${escapeHtml(c.revokedOn)}</dd></div>
+            </dl>
+            <p class="hint" style="margin-top: 0.75rem">${escapeHtml(c.reason)}</p>
+          </div>`;
+      }
+
+      function renderUnknown() {
+        return `
+          <div class="status-banner unknown" role="status">No matching certificate</div>
+          <p class="hint" style="margin: 0">That ID is not in the demo registry. Check for typos or contact the issuer.</p>`;
+      }
+
+      function escapeHtml(text) {
+        const d = document.createElement("div");
+        d.textContent = text;
+        return d.innerHTML;
+      }
+
+      function verify() {
+        const input = document.getElementById("cert-id");
+        const result = document.getElementById("result");
+        const id = normalizeId(input.value);
+
+        if (!id) {
+          result.className = "result visible";
+          result.innerHTML = renderUnknown();
+          return;
+        }
+
+        const entry = registry[id];
+        result.className = "result visible";
+
+        if (!entry) {
+          result.innerHTML = renderUnknown();
+          return;
+        }
+
+        if (entry.status === "valid") {
+          result.innerHTML = renderValid(entry);
+        } else {
+          result.innerHTML = renderRevoked(entry);
+        }
+      }
+
+      document.getElementById("verify-btn").addEventListener("click", verify);
+      document.getElementById("cert-id").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") verify();
+      });
+    </script>
+  </body>
+</html>

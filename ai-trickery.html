@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The AI Trickery · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --ai: #7c3aed;
+        --ai-soft: rgba(124, 58, 237, 0.12);
+        --bubble-user: rgba(37, 99, 235, 0.12);
+        --bubble-ai: rgba(255, 255, 255, 0.85);
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.55;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, #eef2ff 0%, #f5f3ff 40%, #fff7ed 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 20% 15%, rgba(124, 58, 237, 0.2) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 20%, rgba(37, 99, 235, 0.15) 0%, transparent 50%);
+      }
+
+      .page {
+        max-width: min(56rem, 100%);
+        margin: 0 auto;
+      }
+
+      .page-wide {
+        max-width: min(72rem, 100%);
+        margin: 0 auto 1rem;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .top h1 {
+        margin: 0 0 0.35rem;
+        font-size: clamp(1.25rem, 3vw, 1.55rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        background: linear-gradient(120deg, var(--accent) 0%, var(--ai) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-soft);
+        max-width: 36rem;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      /* —— Chat (ChatGPT-style) —— */
+      .chat-shell {
+        display: flex;
+        flex-direction: column;
+        min-height: min(78vh, 52rem);
+        max-height: 85vh;
+        overflow: hidden;
+      }
+
+      .chat-topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem 1rem;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      .chat-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+      }
+
+      .chat-logo {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        background: linear-gradient(145deg, var(--ai-soft), rgba(99, 102, 241, 0.15));
+        border: 1px solid rgba(124, 58, 237, 0.25);
+      }
+
+      .chat-brand h2 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .chat-brand .tag {
+        margin: 0.15rem 0 0;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+      }
+
+      .source-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .source-toolbar label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        width: 100%;
+        margin: 0;
+      }
+
+      @media (min-width: 640px) {
+        .source-toolbar label {
+          width: auto;
+          margin-right: 0.25rem;
+        }
+      }
+
+      .source-toolbar select {
+        padding: 0.45rem 0.65rem;
+        font-size: 0.82rem;
+        font-weight: 650;
+        border-radius: 0.6rem;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--text);
+        max-width: 100%;
+      }
+
+      .source-toolbar select:focus {
+        outline: 2px solid rgba(124, 58, 237, 0.35);
+      }
+
+      #chat-dept-wrap[hidden] {
+        display: none !important;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem 1rem 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+      }
+
+      .msg {
+        max-width: min(42rem, 92%);
+        padding: 0.75rem 0.95rem;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .msg.user {
+        align-self: flex-end;
+        background: var(--bubble-user);
+        border: 1px solid rgba(37, 99, 235, 0.18);
+      }
+
+      .msg.assistant {
+        align-self: flex-start;
+        background: var(--bubble-ai);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+      }
+
+      .msg-meta {
+        font-size: 0.65rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        margin-bottom: 0.35rem;
+      }
+
+      .msg.assistant .msg-meta {
+        color: var(--ai);
+      }
+
+      .typing-dot::after {
+        content: "…";
+        animation: blink 1s steps(1) infinite;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      .chat-input-area {
+        padding: 0.75rem 1rem 1rem;
+        border-top: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      .chat-input-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+      }
+
+      .chat-input-row textarea {
+        flex: 1;
+        min-height: 2.75rem;
+        max-height: 10rem;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.9rem;
+        line-height: 1.45;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 0.85rem;
+        background: rgba(255, 255, 255, 0.95);
+        font-family: inherit;
+        resize: vertical;
+      }
+
+      .chat-input-row textarea:focus {
+        outline: 2px solid rgba(124, 58, 237, 0.3);
+      }
+
+      .btn-send {
+        padding: 0.65rem 1.1rem;
+        font-size: 0.85rem;
+        font-weight: 750;
+        color: #fff;
+        border: none;
+        border-radius: 0.85rem;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--ai), #6366f1);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
+        flex-shrink: 0;
+      }
+
+      .btn-send:hover:not(:disabled) {
+        filter: brightness(1.06);
+      }
+
+      .btn-send:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .chat-hint {
+        margin: 0.5rem 0 0;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+
+      .starters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+      }
+
+      .starter {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 999px;
+        border: 1px solid rgba(124, 58, 237, 0.25);
+        background: rgba(255, 255, 255, 0.7);
+        color: var(--ai);
+        cursor: pointer;
+      }
+
+      .starter:hover {
+        background: var(--ai-soft);
+      }
+
+      .panel {
+        padding: 1.1rem 1.2rem 1.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .panel h2 {
+        margin: 0 0 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .panel > p.lead {
+        margin: 0 0 1rem;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+      }
+
+      .form-demo label {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 650;
+        color: var(--text-soft);
+        margin-bottom: 0.3rem;
+      }
+
+      .form-demo .row {
+        margin-bottom: 0.65rem;
+      }
+
+      .form-demo input,
+      .form-demo select,
+      .form-demo textarea {
+        width: 100%;
+        padding: 0.55rem 0.65rem;
+        font-size: 0.88rem;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        border-radius: 0.55rem;
+        background: rgba(255, 255, 255, 0.85);
+        font-family: inherit;
+      }
+
+      .form-demo input:focus,
+      .form-demo select:focus,
+      .form-demo textarea:focus {
+        outline: 2px solid rgba(124, 58, 237, 0.25);
+        border-color: rgba(124, 58, 237, 0.4);
+      }
+
+      .form-demo textarea {
+        min-height: 4.5rem;
+        resize: vertical;
+      }
+
+      .btn-ai {
+        margin-top: 0.35rem;
+        padding: 0.55rem 1rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #fff;
+        border: none;
+        border-radius: 0.65rem;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--ai), #6366f1);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
+      }
+
+      .btn-ai:hover {
+        filter: brightness(1.05);
+      }
+
+      .btn-ai:disabled {
+        opacity: 0.55;
+        cursor: wait;
+      }
+
+      .hint {
+        margin-top: 0.65rem;
+        font-size: 0.75rem;
+        color: var(--text-soft);
+      }
+
+      .assist-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+        gap: 0.55rem;
+      }
+
+      .assist-card {
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(15, 23, 42, 0.07);
+        font-size: 0.78rem;
+      }
+
+      .assist-card b {
+        display: block;
+        font-size: 0.8rem;
+        margin-bottom: 0.2rem;
+        color: var(--text);
+      }
+
+      .assist-card span {
+        color: var(--text-soft);
+        line-height: 1.4;
+      }
+
+      .badge-demo {
+        display: inline-block;
+        margin-bottom: 0.65rem;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border-radius: 999px;
+        background: var(--ai-soft);
+        color: var(--ai);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 1.25rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(150%);
+        padding: 0.6rem 1rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #fff;
+        background: rgba(15, 23, 42, 0.92);
+        border-radius: 999px;
+        opacity: 0;
+        transition: transform 0.35s ease, opacity 0.25s ease;
+        z-index: 50;
+        pointer-events: none;
+      }
+
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+
+      <div class="page-wide">
+        <header class="top glass">
+          <div>
+            <h1>The AI Trickery</h1>
+            <p class="sub">
+              An <strong>unlimited chat</strong> interface (demo brain) with a <strong>source</strong> picker—this page,
+              one department, or the whole campus story—plus classic form and draft helpers below.
+            </p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <section class="glass chat-shell" aria-label="UAP Assistant chat">
+          <div class="chat-topbar">
+            <div class="chat-brand">
+              <span class="chat-logo" aria-hidden="true">✦</span>
+              <div>
+                <h2>UAP Assistant</h2>
+                <p class="tag">Unlimited messages · ChatGPT-style layout</p>
+              </div>
+            </div>
+            <div class="source-toolbar">
+              <label for="chat-source">Knowledge source</label>
+              <select id="chat-source" aria-describedby="source-help">
+                <option value="page">This page only</option>
+                <option value="dept">Department-wise</option>
+                <option value="all">All campus (demo)</option>
+              </select>
+              <span id="chat-dept-wrap" hidden>
+                <label class="visually-hidden" for="chat-dept">Department</label>
+                <select id="chat-dept" title="Department for context">
+                  <option value="cse">CSE</option>
+                  <option value="eee">EEE</option>
+                  <option value="pharmacy">Pharmacy</option>
+                  <option value="arch">Architecture</option>
+                  <option value="civil">Civil</option>
+                  <option value="bba">BBA</option>
+                </select>
+              </span>
+            </div>
+          </div>
+          <p id="source-help" class="chat-hint" style="padding: 0 1rem; margin: -0.25rem 0 0">
+            <strong>This page</strong> — what The AI Trickery explains here.
+            <strong>Department-wise</strong> — pick a dept for tailored (demo) answers.
+            <strong>All campus</strong> — pulls from the whole UAP Future Demo storyline.
+          </p>
+          <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+          <div class="chat-input-area">
+            <div class="starters" id="chat-starters"></div>
+            <div class="chat-input-row">
+              <label class="visually-hidden" for="chat-input">Message</label>
+              <textarea id="chat-input" rows="2" placeholder="Ask anything… (Shift+Enter for new line)" autocomplete="off"></textarea>
+              <button type="button" class="btn-send" id="chat-send">Send</button>
+            </div>
+            <p class="chat-hint">
+              <strong>Demo mode:</strong> replies are simulated in your browser—no API keys, unlimited turns. Wire your
+              OpenAI / Gemini backend to replace <code>mockReply()</code> for production.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <div class="page">
+        <section class="panel glass" aria-labelledby="h-form">
+          <span class="badge-demo">Legacy demo</span>
+          <h2 id="h-form">Smart form fill</h2>
+          <p class="lead">
+            Click <strong>Auto-fill with AI</strong> to simulate pulling answers from your profile and context (name, ID,
+            program, reason text). In production this would call your approved AI service with strict data rules.
+          </p>
+          <div class="form-demo">
+            <div class="row">
+              <label for="f-name">Full name</label>
+              <input id="f-name" type="text" placeholder="—" autocomplete="off" />
+            </div>
+            <div class="row">
+              <label for="f-id">Student ID</label>
+              <input id="f-id" type="text" placeholder="—" autocomplete="off" />
+            </div>
+            <div class="row">
+              <label for="f-prog">Program</label>
+              <select id="f-prog">
+                <option value="">Select…</option>
+                <option value="cse">CSE</option>
+                <option value="eee">EEE</option>
+                <option value="pharm">Pharmacy</option>
+              </select>
+            </div>
+            <div class="row">
+              <label for="f-reason">Reason for request</label>
+              <textarea id="f-reason" placeholder="—"></textarea>
+            </div>
+            <button type="button" class="btn-ai" id="btn-autofill">Auto-fill with AI</button>
+            <p class="hint">Simulated in-browser only—no data leaves this page.</p>
+          </div>
+        </section>
+
+        <section class="panel glass" aria-labelledby="h-app">
+          <h2 id="h-app">Application &amp; letter writer</h2>
+          <p class="lead">
+            Describe what you need in one line; the demo pastes a structured draft you could edit—cover letters, leave
+            requests, club proposals, scholarship blurbs.
+          </p>
+          <div class="form-demo">
+            <div class="row">
+              <label for="app-prompt">What do you need?</label>
+              <input
+                id="app-prompt"
+                type="text"
+                placeholder='e.g. "Short application for tech club lead"'
+                autocomplete="off"
+              />
+            </div>
+            <div class="row">
+              <label for="app-out">Draft</label>
+              <textarea id="app-out" placeholder="Your draft will appear here…"></textarea>
+            </div>
+            <button type="button" class="btn-ai" id="btn-draft">Draft with AI</button>
+            <p class="hint">Review every line before submitting to any office.</p>
+          </div>
+        </section>
+
+        <section class="panel glass" aria-labelledby="h-assist">
+          <h2 id="h-assist">Assist across campus life</h2>
+          <p class="lead">Same assistant idea, many surfaces—pick what to wire first in your rollout.</p>
+          <div class="assist-grid">
+            <div class="assist-card">
+              <b>Email &amp; notices</b>
+              <span>Polite reminders to faculty, announcement drafts for departments.</span>
+            </div>
+            <div class="assist-card">
+              <b>Summaries</b>
+              <span>Long policy PDFs → bullet points for students.</span>
+            </div>
+            <div class="assist-card">
+              <b>Rephrase &amp; tone</b>
+              <span>Make feedback kinder or more formal before sending.</span>
+            </div>
+            <div class="assist-card">
+              <b>Translation</b>
+              <span>Quick EN ↔ BN for notices (human check for accuracy).</span>
+            </div>
+            <div class="assist-card">
+              <b>Meeting notes</b>
+              <span>Turn messy notes into action items for committees.</span>
+            </div>
+            <div class="assist-card">
+              <b>Scheduling language</b>
+              <span>Short blurbs for calendar invites and routine changes.</span>
+            </div>
+            <div class="assist-card">
+              <b>Form routing</b>
+              <span>Suggest which office a student’s case belongs to.</span>
+            </div>
+            <div class="assist-card">
+              <b>Accessibility</b>
+              <span>Simpler reading level for complex forms.</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+      const fillData = {
+        name: "Ayesha Khan",
+        id: "22101123",
+        prog: "cse",
+        reason:
+          "I am requesting approval to overload one course this semester due to thesis lab alignment. I confirm I meet the minimum GPA requirement and will attend all scheduled sessions.",
+      };
+
+      const draftTemplate = (topic) =>
+        `Subject: Application — ${topic}\n\nDear Committee,\n\nI am writing to express my interest regarding: ${topic}. I have been an active member of the campus community and believe my background aligns with your expectations.\n\nI would welcome the opportunity to discuss this further at your convenience.\n\nSincerely,\n[Your name]\n[Student ID]\n[Program]`;
+
+      const DEPT_BLURBS = {
+        cse: "CSE at UAP: software, systems, and AI-adjacent labs; strong industry placement storytelling in demos.",
+        eee: "EEE: power, energy, and embedded systems; ties to grid and sustainability projects.",
+        pharmacy: "Pharmacy: clinical skills, hospital partnerships, and regulatory-aware curricula.",
+        arch: "Architecture: studio culture, design juries, and built-environment ethics.",
+        civil: "Civil: structures, hydrology, and infrastructure projects with field components.",
+        bba: "BBA: management, strategy, and entrepreneurship with large cohort scale.",
+      };
+
+      const CAMPUS_ALL = `The UAP Future Demo spans Eagle Eye (department stats), Exam Module (faculty readiness), Jobs (CV ranking with publications and filters), Course Files, OBE grading, routines, newsfeed, and more—all static storytelling, not live ERP data.`;
+
+      const THIS_PAGE = `This "AI Trickery" page showcases: (1) smart form auto-fill, (2) application/letter drafts, (3) this chat assistant. Everything requires human review before official use.`;
+
+      function toast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(toast._id);
+        toast._id = setTimeout(() => t.classList.remove("show"), 2200);
+      }
+
+      document.getElementById("btn-autofill").addEventListener("click", function () {
+        const btn = this;
+        btn.disabled = true;
+        setTimeout(() => {
+          document.getElementById("f-name").value = fillData.name;
+          document.getElementById("f-id").value = fillData.id;
+          document.getElementById("f-prog").value = fillData.prog;
+          document.getElementById("f-reason").value = fillData.reason;
+          btn.disabled = false;
+          toast("Fields filled (demo)");
+        }, 450);
+      });
+
+      document.getElementById("btn-draft").addEventListener("click", function () {
+        const prompt = document.getElementById("app-prompt").value.trim() || "general campus request";
+        const btn = this;
+        btn.disabled = true;
+        setTimeout(() => {
+          document.getElementById("app-out").value = draftTemplate(prompt);
+          btn.disabled = false;
+          toast("Draft inserted (demo)");
+        }, 500);
+      });
+
+      /* —— Chat —— */
+      const chatMessages = document.getElementById("chat-messages");
+      const chatInput = document.getElementById("chat-input");
+      const chatSend = document.getElementById("chat-send");
+      const chatSource = document.getElementById("chat-source");
+      const chatDept = document.getElementById("chat-dept");
+      const chatDeptWrap = document.getElementById("chat-dept-wrap");
+      const startersEl = document.getElementById("chat-starters");
+
+      const STARTERS = [
+        "What can you do on this page?",
+        "Summarize campus modules in one paragraph.",
+        "How does Exam Module work for faculty?",
+      ];
+
+      function sourceLabel() {
+        const s = chatSource.value;
+        if (s === "page") return "This page";
+        if (s === "dept") return "Dept: " + chatDept.options[chatDept.selectedIndex].text;
+        return "All campus";
+      }
+
+      function contextBlock() {
+        const s = chatSource.value;
+        if (s === "page") return THIS_PAGE;
+        if (s === "dept") return DEPT_BLURBS[chatDept.value] || DEPT_BLURBS.cse;
+        return CAMPUS_ALL;
+      }
+
+      chatSource.addEventListener("change", () => {
+        chatDeptWrap.hidden = chatSource.value !== "dept";
+      });
+      chatDeptWrap.hidden = chatSource.value !== "dept";
+
+      function appendMessage(role, text, meta) {
+        const div = document.createElement("div");
+        div.className = "msg " + role;
+        if (meta) {
+          const m = document.createElement("div");
+          m.className = "msg-meta";
+          m.textContent = meta;
+          div.appendChild(m);
+        }
+        const body = document.createElement("div");
+        body.textContent = text;
+        div.appendChild(body);
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return body;
+      }
+
+      function delay(ms) {
+        return new Promise((r) => setTimeout(r, ms));
+      }
+
+      async function streamInto(el, text, chunk = 2) {
+        el.textContent = "";
+        for (let i = 0; i < text.length; i += chunk) {
+          el.textContent += text.slice(i, i + chunk);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+          await delay(12 + Math.random() * 8);
+        }
+      }
+
+      async function mockReply(userText) {
+        const ctx = contextBlock();
+        const low = userText.toLowerCase();
+        const src = sourceLabel();
+
+        await delay(280 + Math.random() * 200);
+
+        if (/^(hi|hello|hey)\b/.test(low) || low.includes("who are you")) {
+          return `Hi—I’m **UAP Assistant** (demo). I’m answering with **${src}** as context. ${ctx.slice(0, 120)}… Ask me about exams, jobs, OBE, or this page.`;
+        }
+        if (low.includes("what can you") || low.includes("this page")) {
+          return `On **this page**, you get form auto-fill, letter drafts, and this chat. With source = **${src}**, I bias examples toward: ${ctx.slice(0, 200)}…`;
+        }
+        if (low.includes("exam") || low.includes("faculty")) {
+          return `The **Exam Module** (demo) walks faculty through rule-book reading, tests on OBE, course files, grading standards, and basic rules—plus a scoreboard. [Context: ${src}]`;
+        }
+        if (low.includes("job") || low.includes("cv") || low.includes("publication")) {
+          return `**Jobs** ranks applicants using top-10 publication stack, CGPA, filters (total pubs, experience, CGPA band, PDF on file), and adjustable ranking weights. [${src}]`;
+        }
+        if (low.includes("eagle") || low.includes("board") || low.includes("department stat")) {
+          return `**Eagle Eye** is a BOT-style dashboard: department-wise students, CGPA, waivers, faculty, research—demo numbers. [${src}]`;
+        }
+        if (low.includes("obe") || low.includes("grading")) {
+          return `**OBE grading** ties assessments to outcomes; the Exam Module also has an “OBE ready” check. [${src}]`;
+        }
+        if (low.includes("summarize") || low.includes("one paragraph") || low.includes("campus module")) {
+          return `Campus demo modules include: **Eagle Eye** (stats), **Exam Module** (faculty compliance), **Jobs** (hiring filters), **Course Files**, **OBE**, **Routine maker**, **Newsfeed**, **E-certificates**, **Color picker**, and **AI Trickery** (this page). All are static demos. [${src}]`;
+        }
+        if (low.includes("cse") && chatSource.value === "dept" && chatDept.value === "cse") {
+          return `${DEPT_BLURBS.cse} Ask about algorithms, capstone, or placement narratives.`;
+        }
+
+        return `I’m operating in **${src}** mode.\n\nContext snapshot: ${ctx.slice(0, 280)}${ctx.length > 280 ? "…" : ""}\n\nFor: “${userText.slice(0, 80)}${userText.length > 80 ? "…" : ""}”—in production, a real model would retrieve documents and cite sources. Here, this is a **simulated** answer so you can validate the UI and source switching.`;
+      }
+
+      let busy = false;
+
+      async function sendChat() {
+        const raw = chatInput.value.trim();
+        if (!raw || busy) return;
+        busy = true;
+        chatSend.disabled = true;
+        chatInput.value = "";
+
+        appendMessage("user", raw);
+        const typing = appendMessage("assistant", "", sourceLabel() + " · thinking");
+        typing.parentElement.querySelector(".msg-meta").classList.add("typing-dot");
+
+        const answer = await mockReply(raw);
+        const meta = typing.parentElement.querySelector(".msg-meta");
+        meta.textContent = sourceLabel() + " · demo reply";
+        meta.classList.remove("typing-dot");
+
+        await streamInto(typing, answer.replace(/\*\*(.*?)\*\*/g, "$1"));
+
+        busy = false;
+        chatSend.disabled = false;
+        chatInput.focus();
+      }
+
+      chatSend.addEventListener("click", sendChat);
+      chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendChat();
+        }
+      });
+
+      STARTERS.forEach((t) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "starter";
+        b.textContent = t;
+        b.addEventListener("click", () => {
+          chatInput.value = t;
+          sendChat();
+        });
+        startersEl.appendChild(b);
+      });
+
+      appendMessage(
+        "assistant",
+        "Ask anything—messages are unlimited in this demo. Choose Knowledge source: “This page” (AI Trickery only), “Department-wise” (pick CSE, EEE, …), or “All campus” (whole demo storyline). Replies are simulated; swap in your model API later.",
+        sourceLabel() + " · welcome"
+      );
+    </script>
+  </body>
+</html>

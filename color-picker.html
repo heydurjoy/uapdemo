@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Super Easy Color Picker · UAP Future Demo</title>
+    <style>
+      :root {
+        --theme-primary: #2563eb;
+        --theme-primary-contrast: #ffffff;
+        --theme-canvas-a: #e8f4ff;
+        --theme-canvas-b: #fff5f0;
+        --theme-canvas-orb: rgba(147, 197, 253, 0.45);
+        --theme-text: #0c1222;
+        --theme-muted: #3d4a63;
+        --theme-glass: rgba(255, 255, 255, 0.55);
+        --theme-border: rgba(255, 255, 255, 0.65);
+        --theme-shadow: rgba(59, 91, 142, 0.14);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: color-mix(in srgb, var(--theme-primary) 14%, transparent);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--theme-text);
+        line-height: 1.5;
+        transition: color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1rem, 3vw, 1.75rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, var(--theme-canvas-a) 0%, var(--theme-canvas-b) 100%);
+        transition: background 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: 40px 40px, 40px 40px, 200px 200px, 200px 200px;
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(
+            ellipse 80% 60% at 15% 20%,
+            color-mix(in srgb, var(--theme-primary) 35%, transparent) 0%,
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse 70% 50% at 85% 15%,
+            color-mix(in srgb, var(--theme-canvas-b) 80%, var(--theme-primary) 20%) 0%,
+            transparent 50%
+          ),
+          radial-gradient(ellipse 60% 45% at 50% 90%, var(--theme-canvas-orb) 0%, transparent 55%);
+        transition: background 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .page {
+        max-width: 68rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--theme-glass);
+        backdrop-filter: blur(20px) saturate(150%);
+        -webkit-backdrop-filter: blur(20px) saturate(150%);
+        border: 1px solid var(--theme-border);
+        border-radius: 1.15rem;
+        box-shadow: 0 8px 32px var(--theme-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+        transition: background 0.55s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+          box-shadow 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 0.9rem 1.1rem;
+      }
+
+      .top h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.15rem, 2.4vw, 1.4rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--theme-muted);
+        max-width: 32rem;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--theme-primary);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--theme-primary) 22%, transparent);
+        transition: color 0.55s cubic-bezier(0.4, 0, 0.2, 1), background 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+          border-color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .back:hover {
+        background: color-mix(in srgb, var(--theme-primary) 18%, transparent);
+      }
+
+      .controls {
+        padding: 1rem 1.15rem 1.15rem;
+        margin-bottom: 1.15rem;
+      }
+
+      .controls h2 {
+        margin: 0 0 0.65rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--theme-muted);
+      }
+
+      .preset-section-title {
+        margin: 0 0 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--theme-muted);
+      }
+
+      .preset-chips {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+        gap: 0.65rem;
+        margin-bottom: 1rem;
+      }
+
+      .preset-chip {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+        padding: 0.7rem 0.8rem;
+        border-radius: 0.85rem;
+        border: 0.125rem solid color-mix(in srgb, var(--theme-primary) 18%, transparent);
+        background: color-mix(in srgb, white 72%, var(--theme-primary) 28%);
+        cursor: pointer;
+        text-align: left;
+        font: inherit;
+        color: var(--theme-text);
+        transition: border-color 0.45s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.25s ease, background 0.45s cubic-bezier(0.4, 0, 0.2, 1), color 0.45s ease;
+      }
+
+      .preset-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 26px var(--theme-shadow);
+      }
+
+      .preset-chip:focus-visible {
+        outline: 2px solid var(--theme-primary);
+        outline-offset: 2px;
+      }
+
+      .preset-chip.is-active {
+        border-color: var(--theme-primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 28%, transparent);
+        background: color-mix(in srgb, white 58%, var(--theme-primary) 42%);
+      }
+
+      .preset-swatches {
+        display: flex;
+        gap: 0.3rem;
+      }
+
+      .preset-swatches span {
+        width: 1.4rem;
+        height: 1.4rem;
+        border-radius: 0.4rem;
+        background: var(--swatch);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .preset-chip.is-active .preset-swatches span:nth-child(2) {
+        transform: translateY(-1px);
+      }
+
+      .preset-label {
+        font-weight: 700;
+        font-size: 0.82rem;
+        letter-spacing: -0.02em;
+      }
+
+      .preset-hint {
+        font-size: 0.65rem;
+        color: var(--theme-muted);
+        line-height: 1.25;
+      }
+
+      .preset-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .btn-reset {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border-radius: 0.55rem;
+        border: 1px dashed color-mix(in srgb, var(--theme-primary) 35%, transparent);
+        background: transparent;
+        color: var(--theme-muted);
+        cursor: pointer;
+      }
+
+      .btn-reset:hover {
+        color: var(--theme-primary);
+        border-color: var(--theme-primary);
+      }
+
+      .picker-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+        gap: 0.75rem 1rem;
+      }
+
+      .picker {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .picker label {
+        font-size: 0.72rem;
+        font-weight: 650;
+        color: var(--theme-muted);
+      }
+
+      .picker-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .picker input[type="color"] {
+        width: 2.75rem;
+        height: 2.75rem;
+        padding: 0;
+        border: none;
+        border-radius: 0.55rem;
+        cursor: pointer;
+        background: transparent;
+      }
+
+      .picker input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 2px;
+      }
+
+      .picker input[type="color"]::-webkit-color-swatch {
+        border-radius: 0.45rem;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+      }
+
+      .hex {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.72rem;
+        font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+        color: var(--theme-muted);
+      }
+
+      .blurb {
+        margin: 0.85rem 0 0;
+        padding-top: 0.85rem;
+        border-top: 1px solid color-mix(in srgb, var(--theme-primary) 10%, transparent);
+        font-size: 0.78rem;
+        color: var(--theme-muted);
+        line-height: 1.45;
+      }
+
+      .blurb strong {
+        color: var(--theme-text);
+      }
+
+      .export-wrap {
+        margin-top: 0.85rem;
+      }
+
+      .export-wrap summary {
+        cursor: pointer;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--theme-primary);
+        margin-bottom: 0.35rem;
+      }
+
+      .export-wrap pre {
+        margin: 0;
+        padding: 0.75rem 0.85rem;
+        border-radius: 0.65rem;
+        font-size: 0.65rem;
+        line-height: 1.45;
+        overflow-x: auto;
+        background: color-mix(in srgb, var(--theme-primary) 6%, white);
+        border: 1px solid color-mix(in srgb, var(--theme-primary) 12%, transparent);
+        color: var(--theme-text);
+      }
+
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+      }
+
+      .demo-card {
+        padding: 1rem 1rem 1.05rem;
+      }
+
+      .demo-card h3 {
+        margin: 0 0 0.35rem;
+        font-size: 0.95rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        transition: color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .demo-card p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: var(--theme-muted);
+        line-height: 1.4;
+        transition: color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .icon-pill {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+        display: grid;
+        place-items: center;
+        margin-bottom: 0.65rem;
+        font-size: 1.1rem;
+        background: color-mix(in srgb, var(--theme-primary) 14%, transparent);
+        color: var(--theme-primary);
+        transition: background 0.55s cubic-bezier(0.4, 0, 0.2, 1), color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+      }
+
+      .btn-primary {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.8rem;
+        font-weight: 650;
+        border: none;
+        border-radius: 0.55rem;
+        cursor: pointer;
+        background: var(--theme-primary);
+        color: var(--theme-primary-contrast);
+        box-shadow: 0 4px 14px color-mix(in srgb, var(--theme-primary) 40%, transparent);
+        transition: background 0.55s cubic-bezier(0.4, 0, 0.2, 1), color 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+          box-shadow 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .btn-ghost {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 0.55rem;
+        cursor: pointer;
+        background: transparent;
+        color: var(--theme-primary);
+        border: 1px solid color-mix(in srgb, var(--theme-primary) 35%, transparent);
+        transition: color 0.55s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.65rem;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1rem;
+      }
+
+      @media (max-width: 520px) {
+        .stats {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .stat {
+        text-align: center;
+        padding: 0.65rem;
+        border-radius: 0.75rem;
+        background: color-mix(in srgb, white 70%, var(--theme-primary) 8%);
+        border: 1px solid color-mix(in srgb, var(--theme-primary) 12%, transparent);
+        transition: background 0.55s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .stat b {
+        display: block;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--theme-primary);
+        letter-spacing: -0.03em;
+        transition: color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .stat span {
+        font-size: 0.68rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--theme-muted);
+        transition: color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.85rem;
+        background: linear-gradient(
+          110deg,
+          color-mix(in srgb, var(--theme-primary) 18%, transparent),
+          color-mix(in srgb, var(--theme-canvas-b) 40%, transparent)
+        );
+        border: 1px solid color-mix(in srgb, var(--theme-primary) 20%, transparent);
+        transition: background 0.55s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .banner p {
+        margin: 0;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--theme-text);
+        transition: color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      .tag {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--theme-primary) 16%, transparent);
+        color: var(--theme-primary);
+        transition: background 0.55s cubic-bezier(0.4, 0, 0.2, 1), color 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .progress-block {
+        padding: 0.85rem 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .progress-block p {
+        margin: 0 0 0.4rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--theme-muted);
+      }
+
+      .bar {
+        height: 0.5rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--theme-primary) 12%, white);
+        overflow: hidden;
+        transition: background 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .bar > i {
+        display: block;
+        height: 100%;
+        width: 72%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--theme-primary), color-mix(in srgb, var(--theme-primary) 65%, white));
+        transition: background 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .list-panel {
+        padding: 0.85rem 1rem 1rem;
+      }
+
+      .list-panel h3 {
+        margin: 0 0 0.65rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--theme-muted);
+      }
+
+      .list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.55rem 0;
+        font-size: 0.82rem;
+        border-bottom: 1px solid color-mix(in srgb, var(--theme-primary) 8%, transparent);
+      }
+
+      .list li:last-child {
+        border-bottom: none;
+      }
+
+      .list .ok {
+        color: color-mix(in srgb, var(--theme-primary) 90%, #059669);
+        font-weight: 700;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .preset-chip:hover {
+          transform: none;
+        }
+        body,
+        .glass,
+        .scene::before,
+        .scene::after,
+        .btn-primary,
+        .btn-ghost,
+        .stat,
+        .banner,
+        .tag,
+        .bar,
+        .bar > i {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div>
+            <h1>Super Easy Color Picker</h1>
+            <p class="sub">
+              Pick a department palette (CSE, EEE, Pharmacy, Architecture, Civil)—every card, button, and accent below
+              follows the same tokens so themes stay maintainable.
+            </p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <section class="controls glass" aria-label="Theme controls">
+          <h2>Theme tokens</h2>
+          <p class="preset-section-title">Department themes</p>
+          <div class="preset-chips" role="radiogroup" aria-label="Department color presets">
+            <button type="button" class="preset-chip is-active" data-preset="cse" aria-checked="true" role="radio">
+              <span class="preset-swatches" aria-hidden="true">
+                <span style="--swatch: #2563eb"></span>
+                <span style="--swatch: #e8f4ff"></span>
+                <span style="--swatch: #fff5f0"></span>
+              </span>
+              <span class="preset-label">CSE</span>
+              <span class="preset-hint">Computer Science &amp; Engineering · tech blue</span>
+            </button>
+            <button type="button" class="preset-chip" data-preset="eee" aria-checked="false" role="radio">
+              <span class="preset-swatches" aria-hidden="true">
+                <span style="--swatch: #ea580c"></span>
+                <span style="--swatch: #fff7ed"></span>
+                <span style="--swatch: #ffe4e6"></span>
+              </span>
+              <span class="preset-label">EEE</span>
+              <span class="preset-hint">Electrical &amp; Electronic Engineering · energy</span>
+            </button>
+            <button type="button" class="preset-chip" data-preset="pharmacy" aria-checked="false" role="radio">
+              <span class="preset-swatches" aria-hidden="true">
+                <span style="--swatch: #059669"></span>
+                <span style="--swatch: #ecfdf5"></span>
+                <span style="--swatch: #e0f2fe"></span>
+              </span>
+              <span class="preset-label">Pharmacy</span>
+              <span class="preset-hint">Life sciences · clinical green</span>
+            </button>
+            <button type="button" class="preset-chip" data-preset="architecture" aria-checked="false" role="radio">
+              <span class="preset-swatches" aria-hidden="true">
+                <span style="--swatch: #7c3aed"></span>
+                <span style="--swatch: #f5f3ff"></span>
+                <span style="--swatch: #fdf4ff"></span>
+              </span>
+              <span class="preset-label">Architecture</span>
+              <span class="preset-hint">Design studio · violet accent</span>
+            </button>
+            <button type="button" class="preset-chip" data-preset="civil" aria-checked="false" role="radio">
+              <span class="preset-swatches" aria-hidden="true">
+                <span style="--swatch: #334155"></span>
+                <span style="--swatch: #f1f5f9"></span>
+                <span style="--swatch: #e2e8f0"></span>
+              </span>
+              <span class="preset-label">Civil</span>
+              <span class="preset-hint">Civil Engineering · neutral structure</span>
+            </button>
+          </div>
+          <div class="preset-actions">
+            <button type="button" class="btn-reset" id="reset-btn">Reset to CSE</button>
+          </div>
+          <div class="picker-grid" id="picker-grid"></div>
+          <p class="blurb">
+            <strong>Maintain themes easily:</strong> production apps store these as CSS variables (or design tokens). Change
+            primary once—components that reference <code style="font-size: 0.85em">var(--theme-primary)</code> update
+            everywhere. No hunting through hundreds of hex codes.
+          </p>
+          <div class="export-wrap">
+            <details>
+              <summary>Current theme (copy for your stylesheet)</summary>
+              <pre id="export-code"></pre>
+            </details>
+          </div>
+        </section>
+
+        <div class="banner glass">
+          <p>Preview: this strip uses your primary + canvas mix.</p>
+          <div class="tags">
+            <span class="tag">Live</span>
+            <span class="tag">Tokens</span>
+            <span class="tag">UAP Future</span>
+          </div>
+        </div>
+
+        <div class="stats glass">
+          <div class="stat">
+            <b>24</b>
+            <span>Courses</span>
+          </div>
+          <div class="stat">
+            <b>98%</b>
+            <span>On track</span>
+          </div>
+          <div class="stat">
+            <b>12</b>
+            <span>Alerts</span>
+          </div>
+        </div>
+
+        <div class="demo-grid">
+          <article class="demo-card glass">
+            <div class="icon-pill" aria-hidden="true">📁</div>
+            <h3>Course files</h3>
+            <p>Surface and borders pick up the same primary tint so cards stay on-brand.</p>
+            <div class="btn-row">
+              <button type="button" class="btn-primary">Primary action</button>
+              <button type="button" class="btn-ghost">Secondary</button>
+            </div>
+          </article>
+          <article class="demo-card glass">
+            <div class="icon-pill" aria-hidden="true">📊</div>
+            <h3>OBE grading</h3>
+            <p>Charts and KPIs can read <code style="font-size: 0.78em">--theme-primary</code> for series color.</p>
+            <div class="btn-row">
+              <button type="button" class="btn-primary">View report</button>
+            </div>
+          </article>
+          <article class="demo-card glass">
+            <div class="icon-pill" aria-hidden="true">🎓</div>
+            <h3>eCertificates</h3>
+            <p>Issuance flows inherit button and link colors from one token.</p>
+            <div class="btn-row">
+              <button type="button" class="btn-ghost">Verify</button>
+            </div>
+          </article>
+          <article class="demo-card glass">
+            <div class="icon-pill" aria-hidden="true">🎨</div>
+            <h3>This page</h3>
+            <p>Pickers above only edit variables—no per-component overrides in this demo.</p>
+          </article>
+        </div>
+
+        <div class="progress-block glass">
+          <p>Example progress (width could bind to real data)</p>
+          <div class="bar" role="presentation"><i></i></div>
+        </div>
+
+        <div class="list-panel glass">
+          <h3>Checklist preview</h3>
+          <ul class="list">
+            <li><span>Theme contrast</span> <span class="ok">OK</span></li>
+            <li><span>Token coverage</span> <span class="ok">OK</span></li>
+            <li><span>Rollout to other pages</span> <span class="ok">Next</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const DEFAULT = {
+        "--theme-primary": "#2563eb",
+        "--theme-primary-contrast": "#ffffff",
+        "--theme-canvas-a": "#e8f4ff",
+        "--theme-canvas-b": "#fff5f0",
+        "--theme-canvas-orb": "rgba(147, 197, 253, 0.45)",
+        "--theme-text": "#0c1222",
+        "--theme-muted": "#3d4a63",
+        "--theme-glass": "rgba(255, 255, 255, 0.55)",
+        "--theme-border": "rgba(255, 255, 255, 0.65)",
+        "--theme-shadow": "rgba(59, 91, 142, 0.14)",
+      };
+
+      const PRESETS = {
+        cse: { ...DEFAULT },
+        eee: {
+          ...DEFAULT,
+          "--theme-primary": "#ea580c",
+          "--theme-canvas-a": "#fff7ed",
+          "--theme-canvas-b": "#ffe4e6",
+          "--theme-canvas-orb": "rgba(251, 146, 60, 0.35)",
+        },
+        pharmacy: {
+          ...DEFAULT,
+          "--theme-primary": "#059669",
+          "--theme-canvas-a": "#ecfdf5",
+          "--theme-canvas-b": "#e0f2fe",
+          "--theme-canvas-orb": "rgba(52, 211, 153, 0.35)",
+        },
+        architecture: {
+          ...DEFAULT,
+          "--theme-primary": "#7c3aed",
+          "--theme-canvas-a": "#f5f3ff",
+          "--theme-canvas-b": "#fdf4ff",
+          "--theme-canvas-orb": "rgba(167, 139, 250, 0.4)",
+        },
+        civil: {
+          ...DEFAULT,
+          "--theme-primary": "#334155",
+          "--theme-canvas-a": "#f1f5f9",
+          "--theme-canvas-b": "#e2e8f0",
+          "--theme-canvas-orb": "rgba(100, 116, 139, 0.25)",
+          "--theme-text": "#0f172a",
+          "--theme-muted": "#64748b",
+        },
+      };
+
+      const PICKERS = [
+        { var: "--theme-primary", label: "Primary" },
+        { var: "--theme-canvas-a", label: "Background A" },
+        { var: "--theme-canvas-b", label: "Background B" },
+        { var: "--theme-text", label: "Text" },
+        { var: "--theme-muted", label: "Muted text" },
+        { var: "--theme-glass", label: "Glass fill" },
+      ];
+
+      const root = document.documentElement;
+
+      function idForVar(v) {
+        return v.replace(/^--/, "").replace(/[^a-z0-9-]/gi, "-");
+      }
+
+      function hexToRgbaString(hex, alpha) {
+        const h = hex.replace("#", "");
+        const r = parseInt(h.slice(0, 2), 16);
+        const g = parseInt(h.slice(2, 4), 16);
+        const b = parseInt(h.slice(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+
+      function parseAnyColor(value) {
+        if (value.startsWith("#")) return value;
+        const m = value.match(/rgba?\(([^)]+)\)/);
+        if (m) {
+          const p = m[1].split(",").map((x) => x.trim());
+          if (p.length >= 3) {
+            const r = parseFloat(p[0]);
+            const g = parseFloat(p[1]);
+            const b = parseFloat(p[2]);
+            const a = p[3] !== undefined ? parseFloat(p[3]) : 1;
+            return { r, g, b, a };
+          }
+        }
+        return null;
+      }
+
+      function colorToHex(value) {
+        if (value.startsWith("#") && value.length >= 7) return value.slice(0, 7);
+        const p = parseAnyColor(value);
+        if (!p) return "#888888";
+        const t = (n) => Math.round(n).toString(16).padStart(2, "0");
+        return `#${t(p.r)}${t(p.g)}${t(p.b)}`;
+      }
+
+      function parseCssColor(s) {
+        if (!s) return null;
+        s = s.trim();
+        if (s.startsWith("#")) {
+          const h = s.slice(1);
+          if (h.length < 6) return null;
+          const r = parseInt(h.slice(0, 2), 16);
+          const g = parseInt(h.slice(2, 4), 16);
+          const b = parseInt(h.slice(4, 6), 16);
+          return { r, g, b, a: 1 };
+        }
+        const m = s.match(/rgba?\(([^)]+)\)/);
+        if (m) {
+          const p = m[1].split(",").map((x) => parseFloat(x.trim()));
+          return { r: p[0], g: p[1], b: p[2], a: p[3] !== undefined ? p[3] : 1 };
+        }
+        return null;
+      }
+
+      function colorToCss(key, c) {
+        const { r, g, b, a } = c;
+        const aClamped = Math.max(0, Math.min(1, a));
+        if (
+          key === "--theme-glass" ||
+          key === "--theme-canvas-orb" ||
+          key === "--theme-shadow" ||
+          aClamped < 0.999
+        ) {
+          return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${aClamped})`;
+        }
+        const hex = (n) =>
+          Math.min(255, Math.max(0, Math.round(n)))
+            .toString(16)
+            .padStart(2, "0");
+        return `#${hex(r)}${hex(g)}${hex(b)}`;
+      }
+
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      let animFrame = null;
+
+      function cancelThemeAnimation() {
+        if (animFrame !== null) {
+          cancelAnimationFrame(animFrame);
+          animFrame = null;
+        }
+      }
+
+      function applyTheme(obj) {
+        for (const [k, v] of Object.entries(obj)) {
+          root.style.setProperty(k, v);
+        }
+        syncPickersFromDom();
+        updateExport();
+      }
+
+      function setActivePreset(presetKey) {
+        document.querySelectorAll(".preset-chip").forEach((btn) => {
+          const on = btn.dataset.preset === presetKey;
+          btn.classList.toggle("is-active", on);
+          btn.setAttribute("aria-checked", on ? "true" : "false");
+        });
+      }
+
+      function clearPresetSelection() {
+        document.querySelectorAll(".preset-chip").forEach((btn) => {
+          btn.classList.remove("is-active");
+          btn.setAttribute("aria-checked", "false");
+        });
+      }
+
+      function prefersReducedMotion() {
+        return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      }
+
+      function animateThemeTo(target) {
+        cancelThemeAnimation();
+        const keys = Object.keys(DEFAULT);
+        const start = {};
+        const end = {};
+        for (const k of keys) {
+          const cur = getComputedStyle(root).getPropertyValue(k).trim();
+          start[k] = parseCssColor(cur) || parseCssColor(DEFAULT[k]);
+          end[k] = parseCssColor(target[k]);
+        }
+        const t0 = performance.now();
+        const dur = 620;
+
+        function step(now) {
+          const rawT = Math.min(1, (now - t0) / dur);
+          const e = easeOutCubic(rawT);
+          for (const k of keys) {
+            const s = start[k];
+            const d = end[k];
+            if (!s || !d) continue;
+            root.style.setProperty(
+              k,
+              colorToCss(k, {
+                r: lerp(s.r, d.r, e),
+                g: lerp(s.g, d.g, e),
+                b: lerp(s.b, d.b, e),
+                a: lerp(s.a, d.a, e),
+              })
+            );
+          }
+          syncPickersFromDom();
+          updateExport();
+          if (rawT < 1) {
+            animFrame = requestAnimationFrame(step);
+          } else {
+            animFrame = null;
+            for (const k of keys) {
+              root.style.setProperty(k, target[k]);
+            }
+            syncPickersFromDom();
+            updateExport();
+          }
+        }
+
+        animFrame = requestAnimationFrame(step);
+      }
+
+      function goToPreset(presetKey) {
+        cancelThemeAnimation();
+        const target = { ...DEFAULT, ...PRESETS[presetKey] };
+        setActivePreset(presetKey);
+        if (prefersReducedMotion()) {
+          applyTheme(target);
+          return;
+        }
+        animateThemeTo(target);
+      }
+
+      function syncPickersFromDom() {
+        for (const p of PICKERS) {
+          const sid = idForVar(p.var);
+          const input = document.getElementById(`pick-${sid}`);
+          const hexEl = document.getElementById(`hex-${sid}`);
+          if (!input || !hexEl) continue;
+          const cs = getComputedStyle(root).getPropertyValue(p.var).trim();
+          if (p.var === "--theme-glass") {
+            const parsed = parseAnyColor(cs);
+            if (parsed) {
+              input.value = colorToHex(`rgb(${parsed.r},${parsed.g},${parsed.b})`);
+              hexEl.textContent = cs;
+            }
+          } else {
+            input.value = colorToHex(cs);
+            hexEl.textContent = cs;
+          }
+        }
+      }
+
+      function updateExport() {
+        const el = document.getElementById("export-code");
+        const lines = [":root {"];
+        for (const key of Object.keys(DEFAULT)) {
+          const v = getComputedStyle(root).getPropertyValue(key).trim() || DEFAULT[key];
+          lines.push(`  ${key}: ${v};`);
+        }
+        lines.push("}");
+        el.textContent = lines.join("\n");
+      }
+
+      function buildPickers() {
+        const grid = document.getElementById("picker-grid");
+        for (const p of PICKERS) {
+          const sid = idForVar(p.var);
+          const wrap = document.createElement("div");
+          wrap.className = "picker";
+          wrap.innerHTML = `
+            <label for="pick-${sid}">${p.label}</label>
+            <div class="picker-row">
+              <input type="color" id="pick-${sid}" data-var="${p.var}" aria-label="${p.label}" />
+              <span class="hex" id="hex-${sid}"></span>
+            </div>`;
+          grid.appendChild(wrap);
+        }
+
+        grid.querySelectorAll('input[type="color"]').forEach((input) => {
+          input.addEventListener("input", () => {
+            cancelThemeAnimation();
+            clearPresetSelection();
+            const v = input.dataset.var;
+            let val = input.value;
+            if (v === "--theme-glass") {
+              val = hexToRgbaString(input.value, 0.55);
+            }
+            root.style.setProperty(v, val);
+            const hexEl = document.getElementById(`hex-${idForVar(v)}`);
+            if (hexEl) hexEl.textContent = val;
+            updateExport();
+          });
+        });
+      }
+
+      document.querySelectorAll(".preset-chip").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.preset;
+          if (key && PRESETS[key]) goToPreset(key);
+        });
+      });
+
+      document.getElementById("reset-btn").addEventListener("click", () => {
+        goToPreset("cse");
+      });
+
+      buildPickers();
+      applyTheme(PRESETS.cse);
+      setActivePreset("cse");
+    </script>
+  </body>
+</html>

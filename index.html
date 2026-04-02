@@ -6,75 +6,388 @@
     <title>UAP Future Demo</title>
     <style>
       :root {
-        color-scheme: light dark;
-        --bg: #0f1419;
-        --fg: #e7ecf3;
-        --muted: #8b98a5;
-        --accent: #1d9bf0;
-        --card: rgba(255, 255, 255, 0.04);
-        --border: rgba(255, 255, 255, 0.08);
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-edge: rgba(255, 255, 255, 0.85);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --accent-soft: rgba(37, 99, 235, 0.12);
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
       }
-      @media (prefers-color-scheme: light) {
-        :root {
-          --bg: #f7f9fc;
-          --fg: #0f1419;
-          --muted: #536471;
-          --accent: #1d9bf0;
-          --card: #ffffff;
-          --border: #e1e8ed;
-        }
-      }
-      * {
+
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
       }
+
       body {
         margin: 0;
         min-height: 100vh;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-        background: var(--bg);
-        color: var(--fg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1.5rem;
-        line-height: 1.5;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.55;
+        overflow-x: hidden;
       }
-      main {
-        max-width: 36rem;
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.5rem, 4vw, 3rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(
+          165deg,
+          #e8f4ff 0%,
+          #f0f7ff 22%,
+          #f5f0ff 55%,
+          #fff5f0 100%
+        );
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-color: transparent;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        background-position: 0 0, 0 0, 0 0, 0 0;
+        mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        background: radial-gradient(
+            ellipse 80% 60% at 15% 20%,
+            rgba(147, 197, 253, 0.55) 0%,
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse 70% 50% at 85% 15%,
+            rgba(196, 181, 253, 0.45) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse 60% 45% at 50% 90%,
+            rgba(253, 186, 116, 0.35) 0%,
+            transparent 55%
+          );
+        pointer-events: none;
+      }
+
+      .page {
+        max-width: 68rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .hero {
         width: 100%;
-        padding: 2rem;
-        border-radius: 1rem;
-        background: var(--card);
-        border: 1px solid var(--border);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+        padding: clamp(1.35rem, 3vw, 1.85rem) clamp(1.5rem, 3vw, 2rem);
+        text-align: center;
       }
-      h1 {
+
+      .hero h1 {
         margin: 0 0 0.5rem;
-        font-size: 1.75rem;
+        font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+      }
+
+      .hero-line {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        line-height: 1.35;
+        background: linear-gradient(120deg, var(--accent) 0%, #7c3aed 55%, #db2777 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero-sub {
+        margin: 0.45rem 0 0;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--text-soft);
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+        gap: clamp(1rem, 2.5vw, 1.35rem);
+      }
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 1.35rem 1.25rem 1.4rem;
+        margin: 0;
+        text-align: left;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 40px rgba(59, 91, 142, 0.14), var(--shadow-inset);
+      }
+
+      .card:focus-within {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      .card-icon {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 0.85rem;
+        display: grid;
+        place-items: center;
+        background: var(--accent-soft);
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .card-icon svg {
+        width: 1.35rem;
+        height: 1.35rem;
+      }
+
+      .card h2 {
+        margin: 0;
+        font-size: 1.05rem;
         font-weight: 650;
         letter-spacing: -0.02em;
+        line-height: 1.25;
       }
-      p {
+
+      .card-desc {
         margin: 0;
-        color: var(--muted);
-        font-size: 1rem;
+        font-size: 0.9rem;
+        color: var(--text-soft);
+        flex: 1;
       }
-      .badge {
-        display: inline-block;
-        margin-bottom: 1rem;
-        font-size: 0.75rem;
+
+      .card-foot {
+        margin-top: auto;
+        padding-top: 0.25rem;
+        font-size: 0.72rem;
         font-weight: 600;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--accent);
+        color: rgba(37, 99, 235, 0.75);
+      }
+
+      a.card-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
       }
     </style>
   </head>
   <body>
-    <main>
-      <span class="badge">GitHub Pages</span>
-      <h1>UAP Future Demo</h1>
-      <p>Your site is live. Replace this page with your project content whenever you are ready.</p>
-    </main>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="hero glass">
+          <h1>UAP Future Demo</h1>
+          <p class="hero-line">A glimpse of UAP Future—all in one.</p>
+          <p class="hero-sub">AI everywhere</p>
+        </header>
+
+        <section class="card-grid" aria-label="Modules">
+          <a class="card glass card-link" href="course-files-tracker.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
+            <h2>Course Files Tracker</h2>
+            <p class="card-desc">Track course materials and file status in one place.</p>
+            <p class="card-foot">Open demo</p>
+          </a>
+
+          <a class="card glass card-link" href="obe-grading.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20V10" />
+                <path d="M18 20V4" />
+                <path d="M6 20v-4" />
+              </svg>
+            </div>
+            <h2>OBE Based Grading</h2>
+            <p class="card-desc">Outcome-based evaluation aligned to program objectives.</p>
+            <p class="card-foot">Open demo</p>
+          </a>
+
+          <a class="card glass card-link" href="ecertificates.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+                <path d="M12 18v-6" />
+                <path d="m9 15 3 3 3-3" />
+              </svg>
+            </div>
+            <h2>Verifiable eCertificates</h2>
+            <p class="card-desc">Issue and verify digital credentials with trusted checks.</p>
+            <p class="card-foot">Open demo</p>
+          </a>
+
+          <a class="card glass card-link" href="color-picker.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="3.5" />
+                <circle cx="7" cy="16" r="3.5" />
+                <circle cx="17" cy="16" r="3.5" />
+              </svg>
+            </div>
+            <h2>Super Easy Color Picker</h2>
+            <p class="card-desc">Pick and share colors in seconds—stay up to date with themes as they evolve.</p>
+            <p class="card-foot">Open demo</p>
+          </a>
+
+          <a class="card glass card-link" href="newsfeed.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+                <path d="M18 14h-8" />
+                <path d="M15 18h-5" />
+                <path d="M10 6h8v4h-8V6Z" />
+              </svg>
+            </div>
+            <h2>The Newsfeed</h2>
+            <p class="card-desc">Campus and program updates in one scroll—never miss what matters.</p>
+            <p class="card-foot">Open demo</p>
+          </a>
+
+          <a class="card glass card-link" href="routine-maker.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                <path d="M8 14h8M8 18h5" />
+              </svg>
+            </div>
+            <h2>All in One Routine Maker</h2>
+            <p class="card-desc">
+              Publish class routines; if anything changes, affected students and faculty get notified and emailed. Each
+              routine gets a quality score—early slots vs 11am peak.
+            </p>
+            <p class="card-foot">Open demo</p>
+          </a>
+
+          <a class="card glass card-link" href="ai-trickery.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </div>
+            <h2>The AI Trickery</h2>
+            <p class="card-desc">
+              AI auto-fills forms, drafts applications and letters, and helps with email, summaries, tone, and more—always
+              for you to review.
+            </p>
+            <p class="card-foot">Open demo</p>
+          </a>
+
+          <a class="card glass card-link" href="eagle-eye.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" />
+              </svg>
+            </div>
+            <h2>Eagle Eye</h2>
+            <p class="card-desc">
+              BOT-style board overview: filter or search departments, scan KPI cards (aid, grants, retention, placement,
+              S:F), and read narrative snapshots—demo data for storytelling.
+            </p>
+            <p class="card-foot">Open demo</p>
+          </a>
+
+          <a class="card glass card-link" href="exam-module.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v6M8 5v4M16 5v4" />
+                <rect x="4" y="9" width="16" height="12" rx="2" />
+                <path d="M8 15h8M8 18h5" />
+              </svg>
+            </div>
+            <h2>Exam Module</h2>
+            <p class="card-desc">
+              Faculty exam readiness: read the rule book, attest, complete course-file and OBE checklists, and see a
+              department pulse—who actually cleared the bar (demo).
+            </p>
+            <p class="card-foot">Open demo</p>
+          </a>
+
+          <a class="card glass card-link" href="jobs.html">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                <path d="M6 11h4M6 15h2" />
+              </svg>
+            </div>
+            <h2>Jobs</h2>
+            <p class="card-desc">
+              CV sorting for hiring: rank candidates using their top ten publications, CGPA, citation and recency signals,
+              and experience—adjust weights and expand rows to audit every paper.
+            </p>
+            <p class="card-foot">Open demo</p>
+          </a>
+        </section>
+      </div>
+    </div>
   </body>
 </html>

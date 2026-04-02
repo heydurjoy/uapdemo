@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Course Files Tracker · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+        --ok: #059669;
+        --ok-bg: rgba(5, 150, 105, 0.12);
+        --late: #d97706;
+        --late-bg: rgba(217, 119, 6, 0.14);
+        --miss: #dc2626;
+        --miss-bg: rgba(220, 38, 38, 0.1);
+        --good: #059669;
+        --warn: #d97706;
+        --bad: #dc2626;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, #e8f4ff 0%, #f0f7ff 22%, #f5f0ff 55%, #fff5f0 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(147, 197, 253, 0.55) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 15%, rgba(196, 181, 253, 0.45) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 45% at 50% 90%, rgba(253, 186, 116, 0.35) 0%, transparent 55%);
+      }
+
+      .page {
+        max-width: 100%;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .top h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.25rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.78rem;
+        color: var(--text-soft);
+      }
+
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .dot {
+        width: 0.65rem;
+        height: 0.65rem;
+        border-radius: 999px;
+      }
+
+      .dot.ok {
+        background: var(--ok);
+      }
+      .dot.late {
+        background: var(--late);
+      }
+      .dot.miss {
+        background: var(--miss);
+      }
+
+      .table-panel {
+        padding: 0.5rem 0 1rem;
+        overflow: hidden;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 0.5rem 0.5rem;
+        border-radius: 0.85rem;
+      }
+
+      table {
+        width: 100%;
+        min-width: 1100px;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.72rem;
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        padding: 0.45rem 0.3rem;
+        font-weight: 650;
+        text-align: center;
+        vertical-align: bottom;
+        background: rgba(255, 255, 255, 0.92);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+      }
+
+      thead tr.numbers th {
+        font-variant-numeric: tabular-nums;
+        color: var(--accent);
+        font-size: 0.68rem;
+      }
+
+      thead tr.labels th {
+        padding-top: 0.15rem;
+        padding-bottom: 0.5rem;
+        font-size: 0.62rem;
+        font-weight: 600;
+        color: var(--text-soft);
+        line-height: 1.2;
+        max-width: 3.2rem;
+      }
+
+      tbody td {
+        padding: 0.4rem 0.25rem;
+        text-align: center;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+      }
+
+      tbody tr:hover td {
+        background: rgba(37, 99, 235, 0.04);
+      }
+
+      th.fac-col,
+      td.fac-col {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        min-width: 11.5rem;
+        max-width: 14rem;
+        text-align: left;
+        padding-left: 0.75rem;
+        padding-right: 0.5rem;
+        background: rgba(252, 253, 255, 0.97);
+        border-right: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 4px 0 12px -4px rgba(15, 23, 42, 0.08);
+      }
+
+      thead th.fac-col {
+        z-index: 4;
+        vertical-align: middle;
+      }
+
+      .fac {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .avatar {
+        width: 2.35rem;
+        height: 2.35rem;
+        border-radius: 0.65rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        line-height: 1;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.15);
+        flex-shrink: 0;
+        font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+      }
+
+      .avatar span {
+        display: block;
+        line-height: 1;
+      }
+
+      .fac-meta {
+        min-width: 0;
+      }
+
+      .fac-name {
+        font-weight: 650;
+        font-size: 0.78rem;
+        color: var(--text);
+        line-height: 1.2;
+      }
+
+      .fac-dept {
+        font-size: 0.65rem;
+        color: var(--text-soft);
+        margin-top: 0.1rem;
+      }
+
+      .cell {
+        font-size: 0.85rem;
+        line-height: 1;
+      }
+
+      .cell.ok {
+        color: var(--ok);
+      }
+
+      .cell.late {
+        color: var(--late);
+      }
+
+      .cell.miss {
+        color: var(--miss);
+        opacity: 0.85;
+      }
+
+      td.stat {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 0.72rem;
+        white-space: nowrap;
+      }
+
+      td.stat .pct {
+        display: block;
+        font-size: 0.62rem;
+        font-weight: 500;
+        color: var(--text-soft);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .badge.good {
+        background: var(--ok-bg);
+        color: var(--good);
+      }
+
+      .badge.warn {
+        background: var(--late-bg);
+        color: var(--warn);
+      }
+
+      .badge.bad {
+        background: var(--miss-bg);
+        color: var(--bad);
+      }
+
+      td.insight {
+        vertical-align: top;
+        font-size: 0.68rem;
+        color: var(--text-soft);
+        line-height: 1.35;
+        max-width: 12rem;
+        text-align: left;
+      }
+
+      td.insight strong {
+        color: var(--text);
+      }
+
+      @media (max-width: 640px) {
+        .top {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div>
+            <h1>Course Files Tracker</h1>
+            <p class="sub">Fall 2025 · Required course documents &amp; faculty completion at a glance.</p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <div class="legend glass">
+          <span><span class="dot ok" aria-hidden="true"></span> Submitted on time</span>
+          <span><span class="dot late" aria-hidden="true"></span> Submitted late</span>
+          <span><span class="dot miss" aria-hidden="true"></span> Missing</span>
+        </div>
+
+        <div class="table-panel glass">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr class="numbers">
+                  <th class="fac-col" scope="col" rowspan="2">Faculty</th>
+                  <th scope="col" title="Course Outline">1</th>
+                  <th scope="col" title="Assessment Plan">2</th>
+                  <th scope="col" title="ToS of Mid">3</th>
+                  <th scope="col" title="ToS of Final">4</th>
+                  <th scope="col" title="Moderation Report of Mid">5</th>
+                  <th scope="col" title="Moderation Report of Final">6</th>
+                  <th scope="col" title="Copy of Answer Scripts">7</th>
+                  <th scope="col" title="Questions of CTs">8</th>
+                  <th scope="col" title="Questions of Mid-term Exam">9</th>
+                  <th scope="col" title="Question of Final">10</th>
+                  <th scope="col" title="Attendance Report">11</th>
+                  <th scope="col" title="CO-PO Attainment">12</th>
+                  <th scope="col" title="Grade Sheet">13</th>
+                  <th scope="col" title="Scrutinization Report">14</th>
+                  <th scope="col" colspan="2">Summary</th>
+                </tr>
+                <tr class="labels">
+                  <th scope="col">CO</th>
+                  <th scope="col">AP</th>
+                  <th scope="col">M·ToS</th>
+                  <th scope="col">F·ToS</th>
+                  <th scope="col">M·Mod</th>
+                  <th scope="col">F·Mod</th>
+                  <th scope="col">Ans</th>
+                  <th scope="col">CT</th>
+                  <th scope="col">Mid Q</th>
+                  <th scope="col">Fin Q</th>
+                  <th scope="col">Attn</th>
+                  <th scope="col">CO-PO</th>
+                  <th scope="col">Grd</th>
+                  <th scope="col">Scrut</th>
+                  <th scope="col">Done</th>
+                  <th scope="col">Insight</th>
+                </tr>
+              </thead>
+              <tbody id="faculty-rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const ITEMS = [
+        "Course Outline",
+        "Assessment Plan",
+        "ToS of Mid",
+        "ToS of Final",
+        "Moderation Report of Mid",
+        "Moderation Report of Final",
+        "Copy of Answer Scripts",
+        "Questions of CTs",
+        "Questions of Mid-term Exam",
+        "Question of Final",
+        "Attendance Report",
+        "CO-PO Attainment",
+        "Grade Sheet",
+        "Scrutinization Report",
+      ];
+
+      /** @type {{ name: string, dept: string, emoji: string, cells: ('ok'|'late'|'miss')[], insight: string, level: 'good'|'warn'|'bad' }[]} */
+      const FACULTY = [
+        {
+          name: "Dr. Nadia Rahman",
+          dept: "CSE",
+          emoji: "🎓",
+          cells: ["ok", "ok", "ok", "late", "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok"],
+          insight: "<strong>Strong.</strong> One late ToS item; everything else on time.",
+          level: "good",
+        },
+        {
+          name: "Prof. Kamal Hossain",
+          dept: "EEE",
+          emoji: "💼",
+          cells: ["ok", "ok", "late", "miss", "ok", "miss", "late", "ok", "ok", "miss", "ok", "late", "ok", "ok"],
+          insight: "<strong>Behind.</strong> Final ToS, moderation, and exam Qs still open.",
+          level: "warn",
+        },
+        {
+          name: "Dr. Fariba Ahmed",
+          dept: "TEXT",
+          emoji: "🧪",
+          cells: ["ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok"],
+          insight: "<strong>Excellent.</strong> Full set submitted on schedule.",
+          level: "good",
+        },
+        {
+          name: "Mr. Tanvir Islam",
+          dept: "CSE",
+          emoji: "💻",
+          cells: ["ok", "miss", "miss", "miss", "late", "miss", "miss", "late", "ok", "miss", "late", "miss", "miss", "miss"],
+          insight: "<strong>At risk.</strong> Most items missing or late—needs immediate follow-up.",
+          level: "bad",
+        },
+        {
+          name: "Dr. Sharmin Akter",
+          dept: "BBA",
+          emoji: "📚",
+          cells: ["ok", "ok", "late", "late", "ok", "late", "ok", "ok", "late", "ok", "ok", "ok", "ok", "ok"],
+          insight: "<strong>OK.</strong> Mid-cycle items often late; end reports are in.",
+          level: "warn",
+        },
+        {
+          name: "Dr. Rafiul Karim",
+          dept: "CE",
+          emoji: "📐",
+          cells: ["ok", "ok", "ok", "ok", "ok", "ok", "late", "ok", "ok", "late", "ok", "ok", "ok", "ok"],
+          insight: "<strong>Good.</strong> Minor delays on scripts and final Q—otherwise on track.",
+          level: "good",
+        },
+      ];
+
+      const sym = { ok: "✓", late: "⚠", miss: "—" };
+
+      function counts(cells) {
+        const done = cells.filter((c) => c !== "miss").length;
+        const onTime = cells.filter((c) => c === "ok").length;
+        const late = cells.filter((c) => c === "late").length;
+        return { done, onTime, late, total: ITEMS.length };
+      }
+
+      function badgeLabel(level) {
+        if (level === "good") return "Good";
+        if (level === "warn") return "Needs attention";
+        return "At risk";
+      }
+
+      function render() {
+        const tbody = document.getElementById("faculty-rows");
+        const frag = document.createDocumentFragment();
+
+        for (const f of FACULTY) {
+          const { done, onTime, late, total } = counts(f.cells);
+          const pct = Math.round((done / total) * 100);
+          const onPct = Math.round((onTime / total) * 100);
+
+          const tr = document.createElement("tr");
+
+          const facTd = document.createElement("td");
+          facTd.className = "fac-col";
+          facTd.innerHTML = `
+            <div class="fac">
+              <div class="avatar" aria-hidden="true"><span>${f.emoji}</span></div>
+              <div class="fac-meta">
+                <div class="fac-name">${f.name}</div>
+                <div class="fac-dept">${f.dept}</div>
+              </div>
+            </div>`;
+
+          tr.appendChild(facTd);
+
+          f.cells.forEach((state, i) => {
+            const td = document.createElement("td");
+            const span = document.createElement("span");
+            span.className = `cell ${state}`;
+            span.textContent = sym[state];
+            span.setAttribute("title", `${ITEMS[i]}: ${state === "ok" ? "On time" : state === "late" ? "Late" : "Missing"}`);
+            td.appendChild(span);
+            tr.appendChild(td);
+          });
+
+          const statTd = document.createElement("td");
+          statTd.className = "stat";
+          statTd.innerHTML = `${done}/${total} <span class="pct">${onPct}% on-time · ${late} late</span>`;
+
+          const insightTd = document.createElement("td");
+          insightTd.className = "insight";
+          insightTd.innerHTML = `
+            <span class="badge ${f.level}">${badgeLabel(f.level)}</span><br />
+            ${f.insight}`;
+
+          tr.appendChild(statTd);
+          tr.appendChild(insightTd);
+          frag.appendChild(tr);
+        }
+
+        tbody.appendChild(frag);
+      }
+
+      render();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exam Module · Faculty readiness · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --accent-soft: rgba(37, 99, 235, 0.12);
+        --ok: #059669;
+        --ok-bg: rgba(5, 150, 105, 0.12);
+        --warn: #d97706;
+        --bad: #dc2626;
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, #e8f4ff 0%, #f0f7ff 25%, #f4f0ff 55%, #fff5f0 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(147, 197, 253, 0.5) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 15%, rgba(196, 181, 253, 0.4) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 45% at 50% 90%, rgba(253, 186, 116, 0.3) 0%, transparent 55%);
+      }
+
+      .page {
+        max-width: 76rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .top .titles h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.35rem, 3vw, 1.65rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1.15;
+      }
+
+      .top .titles .tagline {
+        margin: 0 0 0.4rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+        max-width: 44rem;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+        gap: 0.65rem;
+        margin-bottom: 1rem;
+        padding: 0.85rem 1rem;
+      }
+
+      .stat {
+        padding: 0.75rem 0.85rem;
+        border-radius: 0.85rem;
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(15, 23, 42, 0.07);
+      }
+
+      .stat .label {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .stat .value {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: var(--accent);
+        letter-spacing: -0.03em;
+      }
+
+      .stat .hint {
+        font-size: 0.68rem;
+        color: var(--text-soft);
+        margin-top: 0.2rem;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      @media (max-width: 960px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        padding: 1rem 1.1rem 1.15rem;
+      }
+
+      .panel h2 {
+        margin: 0 0 0.65rem;
+        font-size: 0.95rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .panel .lead {
+        margin: 0 0 0.85rem;
+        font-size: 0.82rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+
+      .rule-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        font-size: 0.78rem;
+        color: var(--text-soft);
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 650;
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .pill.warn {
+        background: rgba(217, 119, 6, 0.14);
+        color: #b45309;
+      }
+
+      .pill.ok {
+        background: var(--ok-bg);
+        color: var(--ok);
+      }
+
+      details.chapter {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 0.75rem;
+        margin-bottom: 0.45rem;
+        background: rgba(255, 255, 255, 0.45);
+        overflow: hidden;
+      }
+
+      details.chapter summary {
+        cursor: pointer;
+        padding: 0.55rem 0.75rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      details.chapter summary::-webkit-details-marker {
+        display: none;
+      }
+
+      details.chapter summary .chev {
+        font-size: 0.7rem;
+        color: var(--text-soft);
+      }
+
+      details.chapter[open] summary .chev {
+        transform: rotate(90deg);
+      }
+
+      .chapter-body {
+        padding: 0 0.75rem 0.75rem;
+        font-size: 0.8rem;
+        color: var(--text-soft);
+        line-height: 1.5;
+      }
+
+      .chapter-body ul {
+        margin: 0.35rem 0 0;
+        padding-left: 1.1rem;
+      }
+
+      .chapter-body li {
+        margin-bottom: 0.25rem;
+      }
+
+      .attest {
+        margin-top: 0.85rem;
+        padding: 0.85rem 0.9rem;
+        border-radius: 0.75rem;
+        border: 1px dashed rgba(37, 99, 235, 0.35);
+        background: rgba(37, 99, 235, 0.05);
+      }
+
+      .attest label {
+        display: flex;
+        gap: 0.55rem;
+        align-items: flex-start;
+        font-size: 0.82rem;
+        cursor: pointer;
+      }
+
+      .attest input {
+        margin-top: 0.2rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        margin-top: 0.65rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 0.65rem;
+        cursor: pointer;
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      }
+
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .btn.secondary {
+        background: rgba(15, 23, 42, 0.08);
+        color: var(--text);
+        box-shadow: none;
+      }
+
+      .checklist {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .checklist li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.55rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+        font-size: 0.84rem;
+      }
+
+      .checklist li:last-child {
+        border-bottom: none;
+      }
+
+      .checklist input {
+        margin-top: 0.25rem;
+      }
+
+      .checklist a {
+        color: var(--accent);
+        font-weight: 650;
+      }
+
+      .link-row {
+        margin-top: 0.65rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+
+      .link-row a {
+        font-size: 0.8rem;
+        font-weight: 650;
+        color: var(--accent);
+        text-decoration: none;
+        padding: 0.35rem 0.65rem;
+        border-radius: 0.5rem;
+        background: var(--accent-soft);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .link-row a:hover {
+        background: rgba(37, 99, 235, 0.18);
+      }
+
+      .pulse-panel h2 {
+        margin-bottom: 0.35rem;
+      }
+
+      .pulse-panel .lead {
+        margin-bottom: 0.65rem;
+      }
+
+      .pulse-table-wrap {
+        overflow-x: auto;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+      }
+
+      table.pulse {
+        width: 100%;
+        min-width: 36rem;
+        border-collapse: collapse;
+        font-size: 0.78rem;
+      }
+
+      .pulse th {
+        text-align: left;
+        padding: 0.5rem 0.6rem;
+        background: rgba(37, 99, 235, 0.08);
+        font-size: 0.6rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .pulse td {
+        padding: 0.55rem 0.6rem;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        vertical-align: middle;
+      }
+
+      .pulse tr.you td {
+        background: rgba(37, 99, 235, 0.06);
+      }
+
+      .pulse .name {
+        font-weight: 750;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.4rem;
+        font-size: 0.68rem;
+        font-weight: 750;
+        letter-spacing: 0.02em;
+      }
+
+      .badge.passed {
+        background: var(--ok-bg);
+        color: var(--ok);
+        border: 1px solid rgba(5, 150, 105, 0.25);
+      }
+
+      .badge.attempted {
+        background: rgba(217, 119, 6, 0.14);
+        color: #b45309;
+        border: 1px solid rgba(217, 119, 6, 0.28);
+      }
+
+      .badge.failed {
+        background: rgba(220, 38, 38, 0.1);
+        color: var(--bad);
+        border: 1px solid rgba(220, 38, 38, 0.22);
+      }
+
+      .score-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem 1rem;
+        align-items: center;
+        margin-bottom: 0.65rem;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+      }
+
+      .score-legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .footnote {
+        margin-top: 0.85rem;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 0.35rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .tabs button {
+        padding: 0.4rem 0.85rem;
+        font-size: 0.8rem;
+        font-weight: 650;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        background: rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+      }
+
+      .tabs button[aria-selected="true"] {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+
+      .tab-panel[hidden] {
+        display: none;
+      }
+
+      .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+        gap: 0.75rem;
+      }
+
+      .module-card {
+        padding: 0.9rem 1rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.5);
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        min-height: 7.5rem;
+      }
+
+      .module-card h3 {
+        margin: 0;
+        font-size: 0.88rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .module-card p {
+        margin: 0;
+        font-size: 0.78rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+        flex: 1;
+      }
+
+      .module-card .module-actions {
+        margin-top: auto;
+        padding-top: 0.5rem;
+      }
+
+      .module-card a,
+      .module-card button.linkish {
+        font-size: 0.78rem;
+        font-weight: 650;
+        color: var(--accent);
+        text-decoration: none;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .module-card a:hover,
+      .module-card button.linkish:hover {
+        text-decoration: underline;
+      }
+
+      .module-card .tag {
+        align-self: flex-start;
+        font-size: 0.62rem;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: var(--accent-soft);
+        padding: 0.15rem 0.45rem;
+        border-radius: 0.35rem;
+      }
+
+      .exam-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr));
+        gap: 0.85rem;
+      }
+
+      .exam-card {
+        padding: 1rem 1.05rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.55);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-height: 11rem;
+      }
+
+      .exam-card h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .exam-card p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+        flex: 1;
+      }
+
+      .exam-card .exam-pill {
+        align-self: flex-start;
+        font-size: 0.68rem;
+        font-weight: 750;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.06);
+        color: var(--text-soft);
+      }
+
+      .exam-card .exam-pill.pass {
+        background: var(--ok-bg);
+        color: var(--ok);
+      }
+
+      .btn-take-test {
+        margin-top: auto;
+        width: 100%;
+        padding: 0.55rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 750;
+        border: none;
+        border-radius: 0.65rem;
+        cursor: pointer;
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+      }
+
+      .btn-take-test:hover {
+        filter: brightness(1.05);
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 1.25rem;
+        overflow-y: auto;
+        background: rgba(12, 18, 34, 0.45);
+        backdrop-filter: blur(6px);
+      }
+
+      .modal-overlay[hidden] {
+        display: none;
+      }
+
+      .modal-dialog {
+        width: min(40rem, 100%);
+        margin: 2vh auto;
+        padding: 1.1rem 1.15rem 1.25rem;
+        max-height: min(90vh, 52rem);
+        overflow-y: auto;
+        position: relative;
+      }
+
+      .modal-dialog h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 800;
+        padding-right: 2rem;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 2rem;
+        height: 2rem;
+        border: none;
+        border-radius: 0.5rem;
+        background: rgba(15, 23, 42, 0.08);
+        font-size: 1.25rem;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--text);
+      }
+
+      .modal-close:hover {
+        background: rgba(15, 23, 42, 0.14);
+      }
+
+      .quiz-block {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(15, 23, 42, 0.1);
+      }
+
+      .quiz-block h3 {
+        margin: 0 0 0.65rem;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .quiz-q {
+        margin-bottom: 0.85rem;
+        font-size: 0.82rem;
+      }
+
+      .quiz-q p {
+        margin: 0 0 0.4rem;
+        font-weight: 650;
+      }
+
+      .quiz-q label {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.4rem;
+        margin-bottom: 0.3rem;
+        cursor: pointer;
+        font-weight: 400;
+        color: var(--text-soft);
+      }
+
+      .quiz-q input {
+        margin-top: 0.2rem;
+      }
+
+      .quiz-result {
+        margin-top: 0.65rem;
+        font-size: 0.85rem;
+        font-weight: 650;
+      }
+
+      .quiz-result.ok {
+        color: var(--ok);
+      }
+
+      .quiz-result.bad {
+        color: var(--bad);
+      }
+
+      .grading-box {
+        font-size: 0.8rem;
+        color: var(--text-soft);
+        line-height: 1.5;
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.65rem;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        margin-bottom: 0.65rem;
+      }
+
+      .grading-box ul {
+        margin: 0.35rem 0 0;
+        padding-left: 1.1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div class="titles">
+            <p class="tagline">Faculty · Exams · Compliance</p>
+            <h1>Exam Module</h1>
+            <p class="sub">
+              New faculty are expected to read the exam rule book—but <strong>expectation isn’t proof</strong>. This module
+              tracks rule-book attestation, ties exams to <strong>course files</strong> and <strong>OBE readiness</strong>,
+              and gives chairs a clear “who’s cleared the bar” view (demo).
+            </p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <div class="glass hero-stats" aria-label="Your readiness">
+          <div class="stat">
+            <div class="label">Your readiness</div>
+            <div class="value" id="readiness-pct">0%</div>
+            <div class="hint">Pass all four Take test exams (demo)</div>
+          </div>
+          <div class="stat">
+            <div class="label">Tests passed</div>
+            <div class="value" id="rule-status">0 / 4</div>
+            <div class="hint" id="rule-hint">OBE, course file, grading, basic rules</div>
+          </div>
+          <div class="stat">
+            <div class="label">Last activity</div>
+            <div class="value" id="last-activity" style="font-size: 1rem">—</div>
+            <div class="hint">Stored in this browser (demo)</div>
+          </div>
+        </div>
+
+        <div class="tabs glass" style="padding: 0.65rem 0.85rem" role="tablist" aria-label="Exam module views">
+          <button type="button" role="tab" aria-selected="true" aria-controls="tab-my-exams" id="tab-btn-my-exams">
+            My exams
+          </button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="tab-modules" id="tab-btn-modules">
+            Modules
+          </button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="tab-scoreboard" id="tab-btn-scoreboard">
+            Scoreboard
+          </button>
+        </div>
+
+        <div class="tab-panel" id="tab-my-exams" role="tabpanel" aria-labelledby="tab-btn-my-exams">
+          <section class="glass panel">
+            <h2>Your exams</h2>
+            <p class="lead">
+              Four short exams cover OBE, course files, UAP grading standards, and basic rules. Open a card, review the
+              material in the dialog, then use <strong>Take test</strong>—pass three or more questions to mark that exam
+              complete (demo).
+            </p>
+            <div class="exam-cards-grid">
+              <article class="exam-card">
+                <h3>OBE ready</h3>
+                <p>Course outcomes, rubrics, and assessment alignment so exams evidence what students actually learned.</p>
+                <span class="exam-pill" id="exam-pill-obe">Not passed</span>
+                <button type="button" class="btn-take-test" data-open-modal="exam-obe">Take test</button>
+              </article>
+              <article class="exam-card">
+                <h3>Course file management</h3>
+                <p>Syllabus, exam-to-CLO mapping, and moderation minutes in one auditable course file.</p>
+                <span class="exam-pill" id="exam-pill-cf">Not passed</span>
+                <button type="button" class="btn-take-test" data-open-modal="exam-cf">Take test</button>
+              </article>
+              <article class="exam-card">
+                <h3>Grading in UAP standards</h3>
+                <p>Letter grades, continuous assessment mix, moderation, and integrity of marks per UAP policy.</p>
+                <span class="exam-pill" id="exam-pill-grading">Not passed</span>
+                <button type="button" class="btn-take-test" data-open-modal="exam-grading">Take test</button>
+              </article>
+              <article class="exam-card">
+                <h3>Basic must know rules</h3>
+                <p>Centralized papers, invigilation, malpractice, scripts—what every faculty member must know before exam week.</p>
+                <span class="exam-pill" id="exam-pill-basic">Not passed</span>
+                <button type="button" class="btn-take-test" data-open-modal="exam-basic">Take test</button>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <div class="tab-panel" id="tab-modules" role="tabpanel" aria-labelledby="tab-btn-modules" hidden>
+          <section class="glass panel">
+            <h2>Training modules</h2>
+            <p class="lead">
+              Browse extra links here; official completion is tracked under <strong>My exams</strong> via the four cards and
+              <strong>Take test</strong>.
+            </p>
+            <div class="module-grid">
+              <article class="module-card">
+                <span class="tag">Core</span>
+                <h3>Exam rule book</h3>
+                <p>Centralized papers, moderation, invigilation, malpractice, scripts—open the full book on My exams.</p>
+                <div class="module-actions">
+                  <button type="button" class="linkish" data-jump-tab="my-exams">Open in My exams →</button>
+                </div>
+              </article>
+              <article class="module-card">
+                <span class="tag">Files</span>
+                <h3>Course file management</h3>
+                <p>Syllabus, exam-to-CLO mapping, and moderation minutes in one place.</p>
+                <div class="module-actions">
+                  <a href="course-files-tracker.html">Course Files Tracker demo →</a>
+                </div>
+              </article>
+              <article class="module-card">
+                <span class="tag">OBE</span>
+                <h3>OBE-ready assessments</h3>
+                <p>Align CLOs, rubrics, and post-exam moderation before results go live.</p>
+                <div class="module-actions">
+                  <a href="obe-grading.html">OBE grading demo →</a>
+                </div>
+              </article>
+              <article class="module-card">
+                <span class="tag">Ops</span>
+                <h3>Invigilation briefing</h3>
+                <p>Arrival time, ID checks, seating, incident reporting—review chapter 3 in the rule book.</p>
+                <div class="module-actions">
+                  <button type="button" class="linkish" data-jump-tab="my-exams">Go to rule book →</button>
+                </div>
+              </article>
+              <article class="module-card">
+                <span class="tag">Campus</span>
+                <h3>Routines &amp; halls</h3>
+                <p>See how class schedules interact with exam slots in the routine maker (storytelling demo).</p>
+                <div class="module-actions">
+                  <a href="routine-maker.html">Routine maker →</a>
+                </div>
+              </article>
+              <article class="module-card">
+                <span class="tag">Leadership</span>
+                <h3>Department snapshot</h3>
+                <p>High-level stats across departments—useful context before exam season.</p>
+                <div class="module-actions">
+                  <a href="eagle-eye.html">Eagle Eye →</a>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <div class="tab-panel" id="tab-scoreboard" role="tabpanel" aria-labelledby="tab-btn-scoreboard" hidden>
+          <section class="glass panel pulse-panel">
+            <h2>Did they read the rule book?</h2>
+            <p class="lead">
+              Chairs and exam controllers need a straight answer. The row <strong>You (this browser)</strong> reflects your
+              tests and progress; other names are static demo data.
+            </p>
+            <div class="score-legend" aria-label="Score meanings">
+              <span><span class="badge passed">Passed</span> Cleared this check</span>
+              <span><span class="badge attempted">Attempted</span> In progress or partial</span>
+              <span><span class="badge failed">Failed</span> Not cleared yet</span>
+            </div>
+            <div class="pulse-table-wrap">
+              <table class="pulse">
+                <thead>
+                  <tr>
+                    <th scope="col">Faculty</th>
+                    <th scope="col">Basic rules</th>
+                    <th scope="col">Course file</th>
+                    <th scope="col">Grading</th>
+                    <th scope="col">OBE</th>
+                    <th scope="col">Exam clearance</th>
+                  </tr>
+                </thead>
+                <tbody id="pulse-body"></tbody>
+              </table>
+            </div>
+            <p class="footnote">
+              “You” reflects the four tests in <strong>My exams</strong> (stored in this browser). Other rows are demo
+              only.
+            </p>
+          </section>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="modal-exam-obe" hidden role="dialog" aria-modal="true" aria-labelledby="modal-obe-title">
+        <div class="modal-dialog glass">
+          <button type="button" class="modal-close" data-close-modal aria-label="Close">×</button>
+          <h2 id="modal-obe-title">OBE ready</h2>
+          <p class="lead" style="margin: 0 0 0.75rem; font-size: 0.84rem; color: var(--text-soft)">
+            Outcome-based exams tie every question to published CLOs and rubrics; second marking applies where policy says
+            so.
+          </p>
+          <ul class="checklist" id="obe-checks">
+            <li>
+              <input type="checkbox" id="obe-clo" data-key="obeClo" />
+              <label for="obe-clo">CLOs and assessment weightings published to students at term start.</label>
+            </li>
+            <li>
+              <input type="checkbox" id="obe-rubric" data-key="obeRubric" />
+              <label for="obe-rubric">Rubrics or marking schemes ready for examiners and second markers.</label>
+            </li>
+            <li>
+              <input type="checkbox" id="obe-moderation" data-key="obeModeration" />
+              <label for="obe-moderation">Post-exam moderation / scaling path agreed if cohort results drift.</label>
+            </li>
+          </ul>
+          <div class="link-row">
+            <a href="obe-grading.html">Open OBE grading demo →</a>
+          </div>
+          <div class="quiz-block">
+            <h3>Knowledge check</h3>
+            <form id="form-test-obe" class="exam-quiz-form" data-exam-key="testObe" data-result="result-obe" data-answers="1,1,2">
+              <div class="quiz-q">
+                <p>1. In OBE, summative exams should primarily evidence…</p>
+                <label><input type="radio" name="obe-q1" value="0" /> Instructor preference</label>
+                <label><input type="radio" name="obe-q1" value="1" /> Published course learning outcomes</label>
+                <label><input type="radio" name="obe-q1" value="2" /> Textbook chapter order</label>
+              </div>
+              <div class="quiz-q">
+                <p>2. Rubrics should be available to…</p>
+                <label><input type="radio" name="obe-q2" value="0" /> Examiners only after results</label>
+                <label><input type="radio" name="obe-q2" value="1" /> Students before assessments (where policy requires)</label>
+                <label><input type="radio" name="obe-q2" value="2" /> External boards only</label>
+              </div>
+              <div class="quiz-q">
+                <p>3. If cohort marks drift, the first step is…</p>
+                <label><input type="radio" name="obe-q3" value="0" /> Change grades silently</label>
+                <label><input type="radio" name="obe-q3" value="1" /> Post on social media</label>
+                <label><input type="radio" name="obe-q3" value="2" /> Follow the agreed moderation / scaling path</label>
+              </div>
+              <button type="submit" class="btn" style="margin-top: 0.5rem">Submit test</button>
+              <p class="quiz-result" id="result-obe" role="status"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="modal-exam-cf" hidden role="dialog" aria-modal="true" aria-labelledby="modal-cf-title">
+        <div class="modal-dialog glass">
+          <button type="button" class="modal-close" data-close-modal aria-label="Close">×</button>
+          <h2 id="modal-cf-title">Course file management</h2>
+          <p class="lead" style="margin: 0 0 0.75rem; font-size: 0.84rem; color: var(--text-soft)">
+            The course file is the single place auditors look for syllabus, mapping, and moderation evidence.
+          </p>
+          <ul class="checklist" id="course-checks">
+            <li>
+              <input type="checkbox" id="cf-syllabus" data-key="cfSyllabus" />
+              <label for="cf-syllabus">Syllabus and session plan uploaded for each course I teach this term.</label>
+            </li>
+            <li>
+              <input type="checkbox" id="cf-exam-map" data-key="cfExamMap" />
+              <label for="cf-exam-map">Exam items mapped to CLOs / modules in the course file.</label>
+            </li>
+            <li>
+              <input type="checkbox" id="cf-moderation" data-key="cfModeration" />
+              <label for="cf-moderation">Moderation notes or meeting minutes attached for summative assessments.</label>
+            </li>
+          </ul>
+          <div class="link-row">
+            <a href="course-files-tracker.html">Open Course Files Tracker demo →</a>
+          </div>
+          <div class="quiz-block">
+            <h3>Knowledge check</h3>
+            <form id="form-test-cf" class="exam-quiz-form" data-exam-key="testCf" data-result="result-cf" data-answers="1,2,0">
+              <div class="quiz-q">
+                <p>1. Exam items should map to…</p>
+                <label><input type="radio" name="cf-q1" value="0" /> Random topics</label>
+                <label><input type="radio" name="cf-q1" value="1" /> CLOs / approved course outline</label>
+                <label><input type="radio" name="cf-q1" value="2" /> Only the textbook title</label>
+              </div>
+              <div class="quiz-q">
+                <p>2. Moderation minutes matter because…</p>
+                <label><input type="radio" name="cf-q2" value="0" /> They replace teaching</label>
+                <label><input type="radio" name="cf-q2" value="1" /> They decorate the cover page</label>
+                <label><input type="radio" name="cf-q2" value="2" /> They document academic judgement and dissent</label>
+              </div>
+              <div class="quiz-q">
+                <p>3. The course file should be…</p>
+                <label><input type="radio" name="cf-q3" value="0" /> Complete before high-stakes exams (per policy)</label>
+                <label><input type="radio" name="cf-q3" value="1" /> Optional if busy</label>
+                <label><input type="radio" name="cf-q3" value="2" /> Only verbal</label>
+              </div>
+              <button type="submit" class="btn" style="margin-top: 0.5rem">Submit test</button>
+              <p class="quiz-result" id="result-cf" role="status"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="modal-exam-grading" hidden role="dialog" aria-modal="true" aria-labelledby="modal-grading-title">
+        <div class="modal-dialog glass">
+          <button type="button" class="modal-close" data-close-modal aria-label="Close">×</button>
+          <h2 id="modal-grading-title">Grading in UAP standards</h2>
+          <div class="grading-box">
+            <strong>Demo policy snapshot:</strong>
+            <ul>
+              <li>Letter grades (e.g. A+, A, …) follow the published scale; numerical cut-offs are fixed per program.</li>
+              <li>Continuous assessment and terminal exam weights match the approved syllabus—no ad-hoc changes mid-term.</li>
+              <li>Moderation: cohort-wide drift triggers review; individual appeals follow the registrar’s calendar.</li>
+              <li>Marks are entered through approved channels; provisional vs. final states are clearly labeled.</li>
+            </ul>
+          </div>
+          <div class="quiz-block">
+            <h3>Knowledge check</h3>
+            <form id="form-test-grading" class="exam-quiz-form" data-exam-key="testGrading" data-result="result-grading" data-answers="1,0,2">
+              <div class="quiz-q">
+                <p>1. Assessment weights for exam vs. continuous…</p>
+                <label><input type="radio" name="gr-q1" value="0" /> Can change if class average is low</label>
+                <label><input type="radio" name="gr-q1" value="1" /> Must match the approved syllabus</label>
+                <label><input type="radio" name="gr-q1" value="2" /> Are decided by students vote</label>
+              </div>
+              <div class="quiz-q">
+                <p>2. Final grades should be released…</p>
+                <label><input type="radio" name="gr-q2" value="0" /> Only after approved workflows and dates</label>
+                <label><input type="radio" name="gr-q2" value="1" /> Whenever convenient</label>
+                <label><input type="radio" name="gr-q2" value="2" /> In private groups first</label>
+              </div>
+              <div class="quiz-q">
+                <p>3. Moderation exists to…</p>
+                <label><input type="radio" name="gr-q3" value="0" /> Punish faculty</label>
+                <label><input type="radio" name="gr-q3" value="1" /> Replace double marking always</label>
+                <label><input type="radio" name="gr-q3" value="2" /> Support fair, consistent academic standards</label>
+              </div>
+              <button type="submit" class="btn" style="margin-top: 0.5rem">Submit test</button>
+              <p class="quiz-result" id="result-grading" role="status"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="modal-exam-basic" hidden role="dialog" aria-modal="true" aria-labelledby="modal-basic-title">
+        <div class="modal-dialog glass">
+          <button type="button" class="modal-close" data-close-modal aria-label="Close">×</button>
+          <h2 id="modal-basic-title">Basic must know rules</h2>
+          <p class="lead" style="margin: 0 0 0.75rem; font-size: 0.84rem; color: var(--text-soft)">
+            Expand each chapter once. Attestation unlocks after all sections are opened.
+          </p>
+          <div class="rule-meta">
+            <span class="pill" id="open-count-pill">0 / 5 sections opened</span>
+            <span class="pill warn" id="read-pill">Attestation locked until all open</span>
+          </div>
+          <details class="chapter" data-chapter="1">
+            <summary>1. Centralized exams &amp; question papers <span class="chev">▸</span></summary>
+            <div class="chapter-body">
+              <p>
+                All end-of-term and makeup exams run on the centralized calendar. Question papers must be submitted by the
+                deadline in the approved template; late submissions require written approval from the chair.
+              </p>
+              <ul>
+                <li>Version control: v1.0 to the exam cell, amendments only through moderation.</li>
+                <li>No exam may be taken out of the secure print chain without authorization.</li>
+              </ul>
+            </div>
+          </details>
+          <details class="chapter" data-chapter="2">
+            <summary>2. Moderation, mapping &amp; blueprint <span class="chev">▸</span></summary>
+            <div class="chapter-body">
+              <p>
+                Every paper must map to the approved course outline and OBE assessment plan. Moderation meetings are minuted;
+                dissenting views are recorded.
+              </p>
+              <ul>
+                <li>Blueprint coverage: CLOs and Bloom levels declared before printing.</li>
+                <li>Parallel papers (A/B sets) must be statistically balanced where policy requires.</li>
+              </ul>
+            </div>
+          </details>
+          <details class="chapter" data-chapter="3">
+            <summary>3. Invigilation, identity &amp; seating <span class="chev">▸</span></summary>
+            <div class="chapter-body">
+              <p>
+                Invigilators must arrive 20 minutes early, verify ID cards, enforce seating plans, and report incidents
+                immediately to the exam controller.
+              </p>
+              <ul>
+                <li>Mobile devices: policy-compliant storage only; no exceptions without controller sign-off.</li>
+                <li>Student arrivals after the grace window follow the late-entry rule in the student handbook.</li>
+              </ul>
+            </div>
+          </details>
+          <details class="chapter" data-chapter="4">
+            <summary>4. Malpractice, continuity &amp; special needs <span class="chev">▸</span></summary>
+            <div class="chapter-body">
+              <p>
+                Suspected malpractice follows a sealed process: seize materials, fill the incident form, no informal
+                penalties. Students with accommodations must match the registrar’s letter.
+              </p>
+              <ul>
+                <li>Power or building continuity: follow the “exam in progress” escalation tree.</li>
+                <li>Do not discuss suspected cases in departmental corridors.</li>
+              </ul>
+            </div>
+          </details>
+          <details class="chapter" data-chapter="5">
+            <summary>5. Scripts, retention &amp; remarking <span class="chev">▸</span></summary>
+            <div class="chapter-body">
+              <p>
+                Answer scripts are tracked by packet. Retention periods and destruction are set by policy; remarking windows
+                and fees are published each term.
+              </p>
+              <ul>
+                <li>Faculty may not retain student originals for personal files.</li>
+                <li>Re-evaluation requests go through the exam office only.</li>
+              </ul>
+            </div>
+          </details>
+          <div class="attest">
+            <label>
+              <input type="checkbox" id="attest-check" />
+              <span
+                >I confirm I have read and understood the exam rule book for this term and will follow procedures for
+                setting, moderating, and invigilating assessments.</span
+              >
+            </label>
+            <button type="button" class="btn" id="attest-btn" disabled>Sign attestation</button>
+            <p class="footnote" id="attest-msg" style="margin-top: 0.5rem"></p>
+          </div>
+          <div class="quiz-block">
+            <h3>Knowledge check</h3>
+            <form id="form-test-basic" class="exam-quiz-form" data-exam-key="testBasic" data-result="result-basic" data-answers="1,2,0">
+              <div class="quiz-q">
+                <p>1. Question papers are submitted to…</p>
+                <label><input type="radio" name="ba-q1" value="0" /> Personal email only</label>
+                <label><input type="radio" name="ba-q1" value="1" /> The exam cell / approved workflow on time</label>
+                <label><input type="radio" name="ba-q1" value="2" /> Students directly</label>
+              </div>
+              <div class="quiz-q">
+                <p>2. Suspected malpractice should be…</p>
+                <label><input type="radio" name="ba-q2" value="0" /> Discussed loudly in the corridor</label>
+                <label><input type="radio" name="ba-q2" value="1" /> Ignored</label>
+                <label><input type="radio" name="ba-q2" value="2" /> Handled through the formal incident process</label>
+              </div>
+              <div class="quiz-q">
+                <p>3. Script retention and remarking follow…</p>
+                <label><input type="radio" name="ba-q3" value="0" /> Published policy and exam office routes</label>
+                <label><input type="radio" name="ba-q3" value="1" /> Faculty mood</label>
+                <label><input type="radio" name="ba-q3" value="2" /> Social media polls</label>
+              </div>
+              <button type="submit" class="btn" style="margin-top: 0.5rem">Submit test</button>
+              <p class="quiz-result" id="result-basic" role="status"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEY = "uap_exam_module_v1";
+      const CHAPTER_COUNT = 5;
+
+      const demoFaculty = [
+        { name: "Dr. Hasan Mahmud", basic: "yes", course: "yes", grading: "yes", obe: "yes" },
+        { name: "Prof. Leena Karim", basic: "yes", course: "partial", grading: "yes", obe: "yes" },
+        { name: "Mr. Tanvir Islam", basic: "no", course: "partial", grading: "no", obe: "no" },
+        { name: "Ms. Nadia Rahman", basic: "yes", course: "yes", grading: "partial", obe: "partial" },
+      ];
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return {};
+          return JSON.parse(raw);
+        } catch {
+          return {};
+        }
+      }
+
+      function saveState(s) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+      }
+
+      let state = loadState();
+
+      function scoreBadge(kind) {
+        if (kind === "yes") return '<span class="badge passed">Passed</span>';
+        if (kind === "partial") return '<span class="badge attempted">Attempted</span>';
+        return '<span class="badge failed">Failed</span>';
+      }
+
+      function clearance(basic, course, grading, obe) {
+        const cols = [basic, course, grading, obe];
+        if (cols.every((x) => x === "yes")) return '<span class="badge passed">Passed</span>';
+        if (cols.every((x) => x === "no")) return '<span class="badge failed">Failed</span>';
+        return '<span class="badge attempted">Attempted</span>';
+      }
+
+      function basicRulesStatus() {
+        const n = openedCount();
+        const allOpen = n >= CHAPTER_COUNT;
+        const attested = !!state.attestedAt;
+        const tested = !!state.testBasic;
+        if (tested && attested && allOpen) return "yes";
+        if (tested || attested || allOpen) return "partial";
+        return "no";
+      }
+
+      function youRow() {
+        const course =
+          state.testCf ? "yes" : state.cfSyllabus || state.cfExamMap || state.cfModeration ? "partial" : "no";
+        const obe =
+          state.testObe ? "yes" : state.obeClo || state.obeRubric || state.obeModeration ? "partial" : "no";
+        const grading = state.testGrading ? "yes" : "no";
+
+        return {
+          name: "You (this browser)",
+          basic: basicRulesStatus(),
+          course,
+          grading,
+          obe,
+          you: true,
+        };
+      }
+
+      function renderPulse() {
+        const tbody = document.getElementById("pulse-body");
+        const y = youRow();
+        const rows = [y, ...demoFaculty];
+
+        tbody.innerHTML = rows
+          .map((r) => {
+            const tr = r.you ? "you" : "";
+            const clr = clearance(r.basic, r.course, r.grading, r.obe);
+            return `<tr class="${tr}">
+            <td class="name">${r.name}</td>
+            <td>${scoreBadge(r.basic)}</td>
+            <td>${scoreBadge(r.course)}</td>
+            <td>${scoreBadge(r.grading)}</td>
+            <td>${scoreBadge(r.obe)}</td>
+            <td>${clr}</td>
+          </tr>`;
+          })
+          .join("");
+      }
+
+      function openedCount() {
+        const o = state.chaptersOpened || {};
+        return Object.keys(o).filter((k) => o[k]).length;
+      }
+
+      function testsPassedCount() {
+        return ["testObe", "testCf", "testGrading", "testBasic"].filter((k) => state[k]).length;
+      }
+
+      function updateExamPills() {
+        const map = [
+          { key: "testObe", el: "exam-pill-obe" },
+          { key: "testCf", el: "exam-pill-cf" },
+          { key: "testGrading", el: "exam-pill-grading" },
+          { key: "testBasic", el: "exam-pill-basic" },
+        ];
+        map.forEach(({ key, el }) => {
+          const node = document.getElementById(el);
+          if (!node) return;
+          if (state[key]) {
+            node.textContent = "Passed";
+            node.classList.add("pass");
+          } else {
+            node.textContent = "Not passed";
+            node.classList.remove("pass");
+          }
+        });
+      }
+
+      function updateUI() {
+        const n = openedCount();
+        const oc = document.getElementById("open-count-pill");
+        if (oc) oc.textContent = n + " / " + CHAPTER_COUNT + " sections opened";
+
+        const allOpen = n >= CHAPTER_COUNT;
+        const readPill = document.getElementById("read-pill");
+        if (readPill) {
+          if (allOpen) {
+            readPill.textContent = "All sections opened";
+            readPill.className = "pill ok";
+          } else {
+            readPill.textContent = "Attestation locked until all open";
+            readPill.className = "pill warn";
+          }
+        }
+
+        const attestEl = document.getElementById("attest-check");
+        if (attestEl) {
+          attestEl.disabled = !allOpen || !!state.attestedAt;
+          if (state.attestedAt) attestEl.checked = true;
+          else if (!allOpen) attestEl.checked = false;
+          const canSign = allOpen && attestEl.checked && !state.attestedAt;
+          const attestBtn = document.getElementById("attest-btn");
+          if (attestBtn) attestBtn.disabled = !canSign;
+        }
+
+        const attestMsg = document.getElementById("attest-msg");
+        if (state.attestedAt && attestMsg) {
+          attestMsg.textContent =
+            "Signed at " + new Date(state.attestedAt).toLocaleString() + " (demo; not a legal signature).";
+        } else if (attestMsg) attestMsg.textContent = "";
+
+        ["cf-syllabus", "cf-exam-map", "cf-moderation"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.checked = !!state[el.dataset.key];
+        });
+        ["obe-clo", "obe-rubric", "obe-moderation"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.checked = !!state[el.dataset.key];
+        });
+
+        const tp = testsPassedCount();
+        document.getElementById("readiness-pct").textContent = Math.round((tp / 4) * 100) + "%";
+
+        const rs = document.getElementById("rule-status");
+        if (rs) {
+          rs.textContent = tp + " / 4";
+          rs.style.color = tp === 4 ? "var(--ok)" : "";
+        }
+
+        const last = state.attestedAt || state.lastOpenAt || state.updatedAt || null;
+        document.getElementById("last-activity").textContent = last ? new Date(last).toLocaleDateString() : "—";
+
+        updateExamPills();
+        renderPulse();
+      }
+
+      document.querySelectorAll("#modal-exam-basic details.chapter").forEach((d) => {
+        d.addEventListener("toggle", () => {
+          if (d.open) {
+            const id = d.getAttribute("data-chapter");
+            state.chaptersOpened = state.chaptersOpened || {};
+            state.chaptersOpened[id] = true;
+            state.lastOpenAt = Date.now();
+            state.updatedAt = Date.now();
+            saveState(state);
+            updateUI();
+          }
+        });
+      });
+
+      const attestCheck = document.getElementById("attest-check");
+      if (attestCheck) attestCheck.addEventListener("change", updateUI);
+
+      const attestBtn = document.getElementById("attest-btn");
+      if (attestBtn) {
+        attestBtn.addEventListener("click", () => {
+          const ac = document.getElementById("attest-check");
+          if (!ac || !ac.checked) return;
+          state.attestedAt = Date.now();
+          state.updatedAt = Date.now();
+          saveState(state);
+          updateUI();
+        });
+      }
+
+      document.querySelectorAll("#course-checks input, #obe-checks input").forEach((el) => {
+        el.addEventListener("change", () => {
+          state[el.dataset.key] = el.checked;
+          state.updatedAt = Date.now();
+          saveState(state);
+          updateUI();
+        });
+      });
+
+      function openModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.hidden = false;
+      }
+
+      function closeModals() {
+        document.querySelectorAll(".modal-overlay").forEach((m) => {
+          m.hidden = true;
+        });
+      }
+
+      document.querySelectorAll("[data-open-modal]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          openModal("modal-" + btn.getAttribute("data-open-modal"));
+        });
+      });
+
+      document.querySelectorAll("[data-close-modal]").forEach((btn) => {
+        btn.addEventListener("click", closeModals);
+      });
+
+      document.querySelectorAll(".modal-overlay").forEach((overlay) => {
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) closeModals();
+        });
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModals();
+      });
+
+      document.querySelectorAll(".exam-quiz-form").forEach((form) => {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const key = form.getAttribute("data-exam-key");
+          const ansStr = form.getAttribute("data-answers");
+          const resultId = form.getAttribute("data-result");
+          if (!key || !ansStr) return;
+          const correctVals = ansStr.split(",").map((x) => parseInt(x, 10));
+          const questions = form.querySelectorAll(".quiz-q");
+          let score = 0;
+          questions.forEach((q, i) => {
+            const sel = q.querySelector('input[type="radio"]:checked');
+            if (sel && parseInt(sel.value, 10) === correctVals[i]) score++;
+          });
+          const resultEl = document.getElementById(resultId);
+          if (score >= 2) {
+            state[key] = true;
+            state.updatedAt = Date.now();
+            saveState(state);
+            if (resultEl) {
+              resultEl.textContent = "Passed — " + score + "/3 correct.";
+              resultEl.className = "quiz-result ok";
+            }
+            updateUI();
+          } else {
+            if (resultEl) {
+              resultEl.textContent = "Not passed — " + score + "/3 correct. Need at least 2/3.";
+              resultEl.className = "quiz-result bad";
+            }
+          }
+        });
+      });
+
+      function setupTabs() {
+        const config = [
+          { id: "tab-my-exams", btn: "tab-btn-my-exams" },
+          { id: "tab-modules", btn: "tab-btn-modules" },
+          { id: "tab-scoreboard", btn: "tab-btn-scoreboard" },
+        ];
+
+        function show(panelId) {
+          config.forEach(({ id, btn }) => {
+            const sel = id === panelId;
+            document.getElementById(btn).setAttribute("aria-selected", sel);
+            document.getElementById(id).hidden = !sel;
+          });
+          if (panelId === "tab-scoreboard") renderPulse();
+        }
+
+        config.forEach(({ id, btn }) => {
+          document.getElementById(btn).addEventListener("click", () => show(id));
+        });
+
+        document.querySelectorAll("[data-jump-tab]").forEach((el) => {
+          el.addEventListener("click", () => {
+            show("tab-my-exams");
+            document.getElementById("tab-my-exams").scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        });
+
+        show("tab-my-exams");
+      }
+
+      setupTabs();
+      updateUI();
+    </script>
+  </body>
+</html>

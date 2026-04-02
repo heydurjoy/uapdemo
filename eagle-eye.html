@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Eagle Eye · Board overview · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --accent-soft: rgba(37, 99, 235, 0.12);
+        --ok: #059669;
+        --warn: #d97706;
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, #e8f4ff 0%, #f0f7ff 22%, #f5f0ff 55%, #fff5f0 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(147, 197, 253, 0.55) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 15%, rgba(196, 181, 253, 0.45) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 45% at 50% 90%, rgba(253, 186, 116, 0.35) 0%, transparent 55%);
+      }
+
+      .page {
+        max-width: 76rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .top .titles h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.35rem, 3vw, 1.65rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1.15;
+      }
+
+      .top .titles .tagline {
+        margin: 0 0 0.4rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+        max-width: 42rem;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      .filter-panel {
+        margin-bottom: 1rem;
+        padding: 0.9rem 1rem 1rem;
+      }
+
+      .filter-panel .filter-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .filter-panel h2 {
+        margin: 0;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .filter-panel .scope {
+        font-size: 0.8rem;
+        color: var(--text-soft);
+      }
+
+      .filter-panel .scope strong {
+        color: var(--text);
+        font-weight: 750;
+      }
+
+      .search-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex: 1;
+        min-width: 12rem;
+        max-width: 20rem;
+      }
+
+      .search-wrap label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+      }
+
+      .search-wrap input {
+        width: 100%;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.85rem;
+        border-radius: 0.6rem;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.75);
+      }
+
+      .search-wrap input:focus {
+        outline: 2px solid rgba(37, 99, 235, 0.35);
+        outline-offset: 1px;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        align-items: center;
+      }
+
+      .chip {
+        appearance: none;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        background: rgba(255, 255, 255, 0.65);
+        color: var(--text);
+        font-size: 0.78rem;
+        font-weight: 650;
+        padding: 0.38rem 0.75rem;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+      }
+
+      .chip:hover {
+        background: rgba(37, 99, 235, 0.08);
+        border-color: rgba(37, 99, 235, 0.25);
+      }
+
+      .chip[aria-pressed="true"] {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+      }
+
+      .section-label {
+        margin: 0 0 0.5rem;
+        padding: 0 0.15rem;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+        gap: 0.65rem;
+        margin-bottom: 1rem;
+        padding: 0.85rem 1rem;
+      }
+
+      .stat-grid.dense {
+        grid-template-columns: repeat(auto-fill, minmax(9.25rem, 1fr));
+      }
+
+      .stat-tile {
+        padding: 0.75rem 0.85rem;
+        border-radius: 0.85rem;
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(15, 23, 42, 0.07);
+        min-height: 5.25rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      .stat-tile.highlight {
+        border-color: rgba(37, 99, 235, 0.2);
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(37, 99, 235, 0.06));
+      }
+
+      .stat-tile .label {
+        display: block;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        margin-bottom: 0.3rem;
+        line-height: 1.25;
+      }
+
+      .stat-tile .value {
+        font-size: 1.28rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--accent);
+        line-height: 1.2;
+      }
+
+      .stat-tile .value.ok {
+        color: var(--ok);
+      }
+
+      .stat-tile .value.warn {
+        color: var(--warn);
+      }
+
+      .stat-tile .hint {
+        font-size: 0.66rem;
+        color: var(--text-soft);
+        margin-top: auto;
+        padding-top: 0.35rem;
+        line-height: 1.35;
+      }
+
+      .insight-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+        gap: 0.65rem;
+        margin-bottom: 1rem;
+      }
+
+      .insight-card {
+        padding: 0.85rem 1rem;
+        border-radius: 0.9rem;
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+      }
+
+      .insight-card h3 {
+        margin: 0 0 0.45rem;
+        font-size: 0.68rem;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .insight-card p {
+        margin: 0;
+        font-size: 0.82rem;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .insight-card .meta {
+        margin-top: 0.5rem;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+      }
+
+      .table-panel {
+        padding: 0.5rem 0 0.75rem;
+        overflow: hidden;
+      }
+
+      .table-panel .table-title {
+        margin: 0 0 0.5rem;
+        padding: 0 1rem;
+        font-size: 0.95rem;
+        font-weight: 750;
+        letter-spacing: -0.02em;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        margin: 0 0.5rem;
+        border-radius: 0.75rem;
+      }
+
+      table.stats {
+        width: 100%;
+        min-width: 64rem;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.78rem;
+      }
+
+      .stats thead th {
+        padding: 0.55rem 0.5rem;
+        text-align: left;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        background: rgba(255, 255, 255, 0.75);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+        white-space: nowrap;
+      }
+
+      .stats tbody td {
+        padding: 0.55rem 0.5rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+        vertical-align: top;
+      }
+
+      .stats tbody tr:hover td {
+        background: rgba(37, 99, 235, 0.04);
+      }
+
+      .stats .dept {
+        font-weight: 750;
+        letter-spacing: -0.02em;
+      }
+
+      .stats td.num {
+        font-variant-numeric: tabular-nums;
+        font-weight: 650;
+      }
+
+      .stats tbody tr.totals td {
+        font-weight: 750;
+        background: rgba(37, 99, 235, 0.06);
+        border-top: 2px solid rgba(37, 99, 235, 0.15);
+      }
+
+      .stats tbody tr.hidden {
+        display: none;
+      }
+
+      .stats tfoot td {
+        padding: 0.65rem 1rem;
+        font-weight: 500;
+        background: rgba(255, 255, 255, 0.45);
+        border-top: 1px solid rgba(15, 23, 42, 0.08);
+        border-bottom: none;
+      }
+
+      .research-note {
+        font-size: 0.74rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+
+      .research-note strong {
+        color: var(--text);
+      }
+
+      .footnote {
+        margin: 0.85rem 1rem 1rem;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+
+      @media (max-width: 520px) {
+        .filter-panel .filter-head {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .search-wrap {
+          max-width: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div class="titles">
+            <p class="tagline">Board & leadership · All-in-one</p>
+            <h1>Eagle Eye</h1>
+            <p class="sub">
+              Purpose-built for BOT and senior leadership: enrollment, quality, financial aid exposure, faculty load,
+              research, and outcomes—filter by department or search to drill in. Demo data for narrative only.
+            </p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <div class="glass filter-panel">
+          <div class="filter-head">
+            <h2 id="filter-heading">Department scope</h2>
+            <div class="search-wrap">
+              <label for="dept-search">Search departments</label>
+              <input
+                id="dept-search"
+                type="search"
+                placeholder="Search e.g. CSE, Pharmacy…"
+                autocomplete="off"
+                aria-describedby="filter-heading"
+              />
+            </div>
+          </div>
+          <p class="scope" id="scope-line" aria-live="polite">
+            Showing <strong>all departments</strong> — metrics roll up across the selection below.
+          </p>
+          <div class="chips" id="chip-row" role="group" aria-label="Filter by department"></div>
+        </div>
+
+        <p class="section-label">Executive KPIs</p>
+        <div class="stat-row glass stat-grid" id="kpi-primary" aria-label="Primary key performance indicators"></div>
+
+        <p class="section-label">Quality, finance & outcomes</p>
+        <div class="glass stat-grid dense" id="kpi-secondary" aria-label="Secondary indicators"></div>
+
+        <p class="section-label">Narrative snapshot</p>
+        <div class="insight-cards" id="insight-cards"></div>
+
+        <div class="glass table-panel">
+          <h2 class="table-title">Department detail</h2>
+          <div class="table-wrap">
+            <table class="stats">
+              <thead>
+                <tr>
+                  <th scope="col">Department</th>
+                  <th scope="col">Students</th>
+                  <th scope="col">UG / Grad</th>
+                  <th scope="col">Int'l %</th>
+                  <th scope="col">Avg CGPA</th>
+                  <th scope="col">Avg waiver (৳)</th>
+                  <th scope="col">Aid %</th>
+                  <th scope="col">S : F</th>
+                  <th scope="col">Faculty</th>
+                  <th scope="col">PhD fac %</th>
+                  <th scope="col">Grants (৳)</th>
+                  <th scope="col">Pubs</th>
+                  <th scope="col">Proj</th>
+                  <th scope="col">Retention</th>
+                  <th scope="col">Placement</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="15" class="research-note">
+                    <strong>Definitions (demo):</strong> S:F = students per faculty; Aid % = share receiving any waiver;
+                    Grants = active external + institutional research grants; Pubs = Scopus / WoS–style indexed (5y).
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <p class="footnote">
+            Scholarship exposure uses Aid % × students × avg waiver as a rough order-of-magnitude for board discussion—not
+            audited accounts. Eagle Eye is a neutral name for a campus-wide overview.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const DATA = [
+        {
+          id: "cse",
+          dept: "CSE",
+          students: 1180,
+          undergrad: 980,
+          grad: 200,
+          cgpa: 3.28,
+          waiver: 42000,
+          aidPct: 38,
+          faculty: 42,
+          pubs: 186,
+          projects: 14,
+          phdFacultyPct: 62,
+          grantsBdt: 42500000,
+          internationalPct: 6,
+          retentionPct: 88,
+          placementPct: 78,
+          programs: 3,
+          accreditation: "CSE programs under cyclical IQAC review; two new labs budgeted next FY.",
+          risk: "High enrollment growth—watch faculty hiring vs. lab capacity.",
+        },
+        {
+          id: "eee",
+          dept: "EEE",
+          students: 920,
+          undergrad: 820,
+          grad: 100,
+          cgpa: 3.21,
+          waiver: 38500,
+          aidPct: 34,
+          faculty: 36,
+          pubs: 112,
+          projects: 9,
+          phdFacultyPct: 58,
+          grantsBdt: 31800000,
+          internationalPct: 5,
+          retentionPct: 85,
+          placementPct: 72,
+          programs: 2,
+          accreditation: "Power & energy cluster aligned with national grid priorities.",
+          risk: "Industry placement spread widening vs. CSE—career services pilot planned.",
+        },
+        {
+          id: "pharmacy",
+          dept: "Pharmacy",
+          students: 640,
+          undergrad: 520,
+          grad: 120,
+          cgpa: 3.35,
+          waiver: 45200,
+          aidPct: 41,
+          faculty: 28,
+          pubs: 78,
+          projects: 11,
+          phdFacultyPct: 71,
+          grantsBdt: 28900000,
+          internationalPct: 4,
+          retentionPct: 91,
+          placementPct: 81,
+          programs: 2,
+          accreditation: "Strong retention; hospital partnerships renewed through 2027.",
+          risk: "Higher waiver intensity—monitor discounting vs. net tuition.",
+        },
+        {
+          id: "arch",
+          dept: "Architecture",
+          students: 410,
+          undergrad: 380,
+          grad: 30,
+          cgpa: 3.18,
+          waiver: 51000,
+          aidPct: 44,
+          faculty: 22,
+          pubs: 54,
+          projects: 6,
+          phdFacultyPct: 55,
+          grantsBdt: 15200000,
+          internationalPct: 8,
+          retentionPct: 86,
+          placementPct: 68,
+          programs: 1,
+          accreditation: "Studio throughput stable; external jurors every semester.",
+          risk: "Highest avg waiver—board should track studio cost recovery.",
+        },
+        {
+          id: "civil",
+          dept: "Civil",
+          students: 780,
+          undergrad: 720,
+          grad: 60,
+          cgpa: 3.12,
+          waiver: 36800,
+          aidPct: 36,
+          faculty: 31,
+          pubs: 95,
+          projects: 8,
+          phdFacultyPct: 61,
+          grantsBdt: 35600000,
+          internationalPct: 5,
+          retentionPct: 82,
+          placementPct: 74,
+          programs: 2,
+          accreditation: "Infrastructure & sustainability research cluster growing.",
+          risk: "Retention slightly below peer depts—mentoring program expanded.",
+        },
+        {
+          id: "bba",
+          dept: "BBA",
+          students: 1320,
+          undergrad: 1280,
+          grad: 40,
+          cgpa: 3.08,
+          waiver: 39500,
+          aidPct: 40,
+          faculty: 48,
+          pubs: 64,
+          projects: 5,
+          phdFacultyPct: 48,
+          grantsBdt: 19800000,
+          internationalPct: 7,
+          retentionPct: 79,
+          placementPct: 76,
+          programs: 4,
+          accreditation: "Largest cohort—economies of scale on shared gen-ed delivery.",
+          risk: "Placement rate improving but still behind STEM peers.",
+        },
+      ];
+
+      let filterId = "all";
+      let searchQuery = "";
+
+      function fmt(n) {
+        return n.toLocaleString("en-BD");
+      }
+
+      function fmtCr(n) {
+        if (n >= 1e7) return "৳" + (n / 1e7).toFixed(2) + " Cr";
+        return "৳" + fmt(n);
+      }
+
+      function sfRatio(students, faculty) {
+        if (!faculty) return "—";
+        return (students / faculty).toFixed(1);
+      }
+
+      function visibleRows() {
+        const q = searchQuery.trim().toLowerCase();
+        return DATA.filter((r) => {
+          if (filterId !== "all" && r.id !== filterId) return false;
+          if (!q) return true;
+          return r.dept.toLowerCase().includes(q) || r.id.includes(q);
+        });
+      }
+
+      function aggregate(list) {
+        const students = list.reduce((s, r) => s + r.students, 0);
+        const cgpaNum = list.reduce((s, r) => s + r.cgpa * r.students, 0);
+        const waiverWt = list.reduce((s, r) => s + r.waiver * r.students, 0);
+        const aidWt = list.reduce((s, r) => s + (r.aidPct / 100) * r.students, 0);
+        const faculty = list.reduce((s, r) => s + r.faculty, 0);
+        const pubs = list.reduce((s, r) => s + r.pubs, 0);
+        const projects = list.reduce((s, r) => s + r.projects, 0);
+        const grants = list.reduce((s, r) => s + r.grantsBdt, 0);
+        const intlWt = list.reduce((s, r) => s + (r.internationalPct / 100) * r.students, 0);
+        const retWt = list.reduce((s, r) => s + (r.retentionPct / 100) * r.students, 0);
+        const placeWt = list.reduce((s, r) => s + (r.placementPct / 100) * r.students, 0);
+        const phdWt = list.reduce((s, r) => s + (r.phdFacultyPct / 100) * r.faculty, 0);
+        const undergrad = list.reduce((s, r) => s + r.undergrad, 0);
+        const grad = list.reduce((s, r) => s + r.grad, 0);
+        const programs = list.reduce((s, r) => s + r.programs, 0);
+
+        const wAvgCgpa = students ? cgpaNum / students : 0;
+        const wAvgWaiver = students ? waiverWt / students : 0;
+        const wAvgAid = students ? (aidWt / students) * 100 : 0;
+        const scholarshipExposure = list.reduce(
+          (s, r) => s + r.students * (r.aidPct / 100) * r.waiver,
+          0
+        );
+        const wIntl = students ? (intlWt / students) * 100 : 0;
+        const wRet = students ? (retWt / students) * 100 : 0;
+        const wPlace = students ? (placeWt / students) * 100 : 0;
+        const wPhdFac = faculty ? (phdWt / faculty) * 100 : 0;
+        const sf = faculty ? students / faculty : 0;
+
+        return {
+          students,
+          wAvgCgpa,
+          wAvgWaiver,
+          wAvgAid,
+          scholarshipExposure,
+          faculty,
+          pubs,
+          projects,
+          grants,
+          wIntl,
+          wRet,
+          wPlace,
+          wPhdFac,
+          sf,
+          undergrad,
+          grad,
+          programs,
+          researchIndex: pubs + projects,
+        };
+      }
+
+      function renderChips() {
+        const row = document.getElementById("chip-row");
+        const ids = [{ id: "all", label: "All departments" }, ...DATA.map((r) => ({ id: r.id, label: r.dept }))];
+        row.innerHTML = ids
+          .map(
+            (c) =>
+              `<button type="button" class="chip" data-id="${c.id}" aria-pressed="${filterId === c.id}">${c.label}</button>`
+          )
+          .join("");
+        row.querySelectorAll(".chip").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            filterId = btn.getAttribute("data-id");
+            document.getElementById("dept-search").value = "";
+            searchQuery = "";
+            syncChips();
+            render();
+          });
+        });
+      }
+
+      function syncChips() {
+        document.querySelectorAll(".chip").forEach((btn) => {
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-id") === filterId ? "true" : "false");
+        });
+      }
+
+      function updateScope(list) {
+        const scope = document.getElementById("scope-line");
+        if (filterId === "all" && !searchQuery.trim()) {
+          scope.innerHTML =
+            'Showing <strong>all departments</strong> — metrics roll up across the full portfolio below.';
+          return;
+        }
+        if (list.length === 1) {
+          scope.innerHTML = `Focused on <strong>${list[0].dept}</strong> — all KPIs and the table reflect this department only.`;
+          return;
+        }
+        if (searchQuery.trim()) {
+          scope.innerHTML = `Filtered by search — <strong>${list.length}</strong> department(s) match.`;
+          return;
+        }
+        scope.innerHTML = "Adjust chips or search to change what is included.";
+      }
+
+      function renderKpis(a) {
+        const primary = document.getElementById("kpi-primary");
+        const secondary = document.getElementById("kpi-secondary");
+
+        primary.innerHTML = `
+          <div class="stat-tile highlight">
+            <span class="label">Total students</span>
+            <span class="value">${fmt(a.students)}</span>
+            <span class="hint">UG ${fmt(a.undergrad)} · Grad ${fmt(a.grad)}</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Weighted avg CGPA</span>
+            <span class="value">${a.students ? a.wAvgCgpa.toFixed(2) : "—"}</span>
+            <span class="hint">Enrollment-weighted</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Total faculty</span>
+            <span class="value">${fmt(a.faculty)}</span>
+            <span class="hint">Instructional headcount</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Student : Faculty</span>
+            <span class="value">${a.faculty ? a.sf.toFixed(1) : "—"}</span>
+            <span class="hint">Lower is usually easier to sustain</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Indexed publications</span>
+            <span class="value">${fmt(a.pubs)}</span>
+            <span class="hint">Last 5 years (demo)</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Active projects</span>
+            <span class="value">${fmt(a.projects)}</span>
+            <span class="hint">Research & sponsored activity</span>
+          </div>
+        `;
+
+        secondary.innerHTML = `
+          <div class="stat-tile">
+            <span class="label">Scholarship exposure (est.)</span>
+            <span class="value">${fmtCr(a.scholarshipExposure)}</span>
+            <span class="hint">Aid % × cohort × avg waiver</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Avg waiver (৳)</span>
+            <span class="value">৳${fmt(Math.round(a.wAvgWaiver))}</span>
+            <span class="hint">Per student (cohort-weighted)</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Students on aid (avg %)</span>
+            <span class="value">${a.students ? a.wAvgAid.toFixed(1) + "%" : "—"}</span>
+            <span class="hint">Share receiving any waiver</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Active grants (total)</span>
+            <span class="value">${fmtCr(a.grants)}</span>
+            <span class="hint">Sum across selection</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">International students</span>
+            <span class="value">${a.students ? a.wIntl.toFixed(1) + "%" : "—"}</span>
+            <span class="hint">Of enrolled headcount</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Retention (weighted)</span>
+            <span class="value ${a.wRet >= 85 ? "ok" : ""}">${a.students ? a.wRet.toFixed(1) + "%" : "—"}</span>
+            <span class="hint">Year-over-year continuation</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Placement (weighted)</span>
+            <span class="value">${a.students ? a.wPlace.toFixed(1) + "%" : "—"}</span>
+            <span class="hint">Within 12 months of graduation</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">PhD-qualified faculty</span>
+            <span class="value">${a.faculty ? a.wPhdFac.toFixed(0) + "%" : "—"}</span>
+            <span class="hint">By headcount-weighted average</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Programs (sum)</span>
+            <span class="value">${fmt(a.programs)}</span>
+            <span class="hint">Named degree programs in scope</span>
+          </div>
+          <div class="stat-tile">
+            <span class="label">Research index</span>
+            <span class="value">${fmt(a.researchIndex)}</span>
+            <span class="hint">Pubs + projects (quick pulse)</span>
+          </div>
+        `;
+      }
+
+      function renderInsights(list, a) {
+        const el = document.getElementById("insight-cards");
+        if (list.length === 0) {
+          el.innerHTML =
+            '<div class="insight-card glass"><h3>No match</h3><p>Try another search or pick a department chip.</p></div>';
+          return;
+        }
+        if (list.length === 1) {
+          const r = list[0];
+          el.innerHTML = `
+            <div class="insight-card glass">
+              <h3>Accreditation & quality</h3>
+              <p>${r.accreditation}</p>
+              <p class="meta">Programs: ${r.programs} · PhD-qualified faculty: ${r.phdFacultyPct}%</p>
+            </div>
+            <div class="insight-card glass">
+              <h3>Risk / opportunity</h3>
+              <p>${r.risk}</p>
+              <p class="meta">Est. scholarship exposure for this dept: ${fmtCr(
+                r.students * (r.aidPct / 100) * r.waiver
+              )}</p>
+            </div>
+            <div class="insight-card glass">
+              <h3>Cross-check</h3>
+              <p>
+                This department carries <strong>${((r.students / a.students) * 100 || 100).toFixed(1)}%</strong> of
+                students in the current view and <strong>${((r.faculty / a.faculty) * 100 || 100).toFixed(1)}%</strong> of
+                faculty. Research output: <strong>${fmt(r.pubs)}</strong> pubs,
+                <strong>${fmt(r.projects)}</strong> active projects.
+              </p>
+            </div>
+          `;
+          return;
+        }
+
+        const topDept = [...list].sort((x, y) => y.students - x.students)[0];
+        const topRes = [...list].sort((x, y) => y.pubs + y.projects - (x.pubs + x.projects))[0];
+        el.innerHTML = `
+          <div class="insight-card glass">
+            <h3>Largest cohort</h3>
+            <p><strong>${topDept.dept}</strong> leads enrollment with ${fmt(topDept.students)} students (${(
+          (topDept.students / a.students) *
+          100
+        ).toFixed(1)}% of this view).</p>
+          </div>
+          <div class="insight-card glass">
+            <h3>Research intensity</h3>
+            <p><strong>${topRes.dept}</strong> shows the highest combined publication and project count in this selection.</p>
+            <p class="meta">Compare waiver intensity vs. outcomes when prioritizing BOT questions.</p>
+          </div>
+          <div class="insight-card glass">
+            <h3>Portfolio balance</h3>
+            <p>Across <strong>${list.length}</strong> departments, weighted placement is <strong>${a.wPlace.toFixed(
+          1
+        )}%</strong> and retention <strong>${a.wRet.toFixed(1)}%</strong>. Total grant pipeline: <strong>${fmtCr(
+          a.grants
+        )}</strong>.</p>
+          </div>
+        `;
+      }
+
+      function renderTable(list, a) {
+        const tb = document.getElementById("tbody");
+        if (list.length === 0) {
+          tb.innerHTML = "";
+          return;
+        }
+
+        const showTotals = list.length > 1;
+
+        const rowsHtml = list
+          .map(
+            (r) => `<tr data-id="${r.id}">
+            <td class="dept">${r.dept}</td>
+            <td class="num">${fmt(r.students)}</td>
+            <td class="num">${fmt(r.undergrad)} / ${fmt(r.grad)}</td>
+            <td class="num">${r.internationalPct}%</td>
+            <td class="num">${r.cgpa.toFixed(2)}</td>
+            <td class="num">৳${fmt(r.waiver)}</td>
+            <td class="num">${r.aidPct}%</td>
+            <td class="num">${sfRatio(r.students, r.faculty)}</td>
+            <td class="num">${r.faculty}</td>
+            <td class="num">${r.phdFacultyPct}%</td>
+            <td class="num">${fmtCr(r.grantsBdt)}</td>
+            <td class="num">${fmt(r.pubs)}</td>
+            <td class="num">${fmt(r.projects)}</td>
+            <td class="num">${r.retentionPct}%</td>
+            <td class="num">${r.placementPct}%</td>
+          </tr>`
+          )
+          .join("");
+
+        const totalsRow = showTotals
+          ? `<tr class="totals">
+            <td class="dept">Selected total (${list.length} depts)</td>
+            <td class="num">${fmt(a.students)}</td>
+            <td class="num">${fmt(a.undergrad)} / ${fmt(a.grad)}</td>
+            <td class="num">${a.wIntl.toFixed(1)}%</td>
+            <td class="num">${a.wAvgCgpa.toFixed(2)}</td>
+            <td class="num">৳${fmt(Math.round(a.wAvgWaiver))}</td>
+            <td class="num">${a.wAvgAid.toFixed(1)}%</td>
+            <td class="num">${a.faculty ? a.sf.toFixed(1) : "—"}</td>
+            <td class="num">${fmt(a.faculty)}</td>
+            <td class="num">${a.wPhdFac.toFixed(0)}%</td>
+            <td class="num">${fmtCr(a.grants)}</td>
+            <td class="num">${fmt(a.pubs)}</td>
+            <td class="num">${fmt(a.projects)}</td>
+            <td class="num">${a.wRet.toFixed(1)}%</td>
+            <td class="num">${a.wPlace.toFixed(1)}%</td>
+          </tr>`
+          : "";
+
+        tb.innerHTML = rowsHtml + totalsRow;
+      }
+
+      function applySearchFilter() {
+        const q = document.getElementById("dept-search").value.trim().toLowerCase();
+        searchQuery = q;
+        if (q) {
+          filterId = "all";
+          syncChips();
+        }
+      }
+
+      function render() {
+        applySearchFilter();
+        const list = visibleRows();
+        const a = aggregate(list);
+
+        updateScope(list);
+        syncChips();
+        renderKpis(a);
+        renderInsights(list, a);
+        renderTable(list, a);
+      }
+
+      document.getElementById("dept-search").addEventListener("input", () => {
+        render();
+      });
+
+      renderChips();
+      render();
+    </script>
+  </body>
+</html>

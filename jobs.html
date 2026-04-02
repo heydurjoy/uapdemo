@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jobs · CV Sort · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --accent-soft: rgba(37, 99, 235, 0.12);
+        --ok: #059669;
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(155deg, #e8f4ff 0%, #eef6ff 30%, #f3f0ff 60%, #fff8f0 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(147, 197, 253, 0.5) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 15%, rgba(196, 181, 253, 0.4) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 45% at 50% 90%, rgba(253, 186, 116, 0.3) 0%, transparent 55%);
+      }
+
+      .page {
+        max-width: 76rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .top .titles h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.35rem, 3vw, 1.65rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1.15;
+      }
+
+      .top .titles .tagline {
+        margin: 0 0 0.4rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+        max-width: 44rem;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(17.5rem, 21rem) 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .controls {
+        padding: 0.85rem 1rem 1rem;
+        position: sticky;
+        top: 0.75rem;
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+      }
+
+      .controls h2 {
+        margin: 0 0 0.65rem;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .controls h2:first-of-type {
+        margin-top: 0;
+      }
+
+      .facet-divider {
+        border: none;
+        border-top: 1px solid rgba(15, 23, 42, 0.1);
+        margin: 1rem 0;
+      }
+
+      .facet {
+        margin-bottom: 0.95rem;
+      }
+
+      .facet-title {
+        font-size: 0.78rem;
+        font-weight: 750;
+        color: var(--text);
+        margin-bottom: 0.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .facet-title .facet-hint {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-soft);
+        text-transform: none;
+        letter-spacing: 0;
+      }
+
+      .facet-value {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--accent);
+        font-variant-numeric: tabular-nums;
+        margin-bottom: 0.25rem;
+      }
+
+      .dual-range {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+
+      .dual-range .mini label {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 650;
+        color: var(--text-soft);
+        margin-bottom: 0.2rem;
+      }
+
+      .dual-range .mini input[type="range"] {
+        width: 100%;
+      }
+
+      .facet-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        padding: 0.45rem 0.5rem;
+        border-radius: 0.55rem;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      .facet-check input {
+        margin-top: 0.15rem;
+      }
+
+      .facet-check strong {
+        display: block;
+        font-size: 0.8rem;
+      }
+
+      .facet-check span {
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        font-weight: 400;
+      }
+
+      .btn-clear-filters {
+        width: 100%;
+        margin-top: 0.35rem;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        border-radius: 0.55rem;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        color: var(--text);
+      }
+
+      .btn-clear-filters:hover {
+        background: rgba(37, 99, 235, 0.08);
+        border-color: rgba(37, 99, 235, 0.25);
+      }
+
+      .pdf-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        font-size: 0.62rem;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 0.12rem 0.35rem;
+        border-radius: 0.3rem;
+        background: rgba(220, 38, 38, 0.1);
+        color: #b91c1c;
+        vertical-align: middle;
+      }
+
+      .pdf-tag.ok {
+        background: rgba(5, 150, 105, 0.12);
+        color: var(--ok);
+      }
+
+      .control-block {
+        margin-bottom: 1rem;
+      }
+
+      .control-block label {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: 0.8rem;
+        font-weight: 650;
+        margin-bottom: 0.35rem;
+        gap: 0.5rem;
+      }
+
+      .control-block label span.val {
+        font-variant-numeric: tabular-nums;
+        color: var(--accent);
+        font-weight: 750;
+      }
+
+      .control-block input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+
+      .control-block .hint {
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        margin-top: 0.25rem;
+        line-height: 1.4;
+      }
+
+      .search-row {
+        margin-bottom: 0.85rem;
+      }
+
+      .search-row input {
+        width: 100%;
+        padding: 0.5rem 0.65rem;
+        font-size: 0.85rem;
+        border-radius: 0.65rem;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.75);
+      }
+
+      .search-row input:focus {
+        outline: 2px solid rgba(37, 99, 235, 0.35);
+        outline-offset: 1px;
+      }
+
+      .formula {
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.65rem;
+        background: var(--accent-soft);
+        border: 1px solid rgba(37, 99, 235, 0.15);
+      }
+
+      .formula strong {
+        color: var(--text);
+      }
+
+      .main-panel {
+        padding: 0.75rem 0 1rem;
+        overflow: hidden;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0 1rem 0.65rem;
+      }
+
+      .toolbar .count {
+        font-size: 0.85rem;
+        color: var(--text-soft);
+      }
+
+      .toolbar .count strong {
+        color: var(--text);
+      }
+
+      .sort-select {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: 0.82rem;
+      }
+
+      .sort-select select {
+        padding: 0.4rem 0.55rem;
+        border-radius: 0.55rem;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: rgba(255, 255, 255, 0.85);
+        font-size: 0.82rem;
+      }
+
+      .rank-list {
+        padding: 0 0.65rem 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+      }
+
+      .applicant {
+        border-radius: 1rem;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.45);
+        overflow: hidden;
+      }
+
+      .applicant summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 0.85rem 1rem;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 0.65rem 1rem;
+        align-items: center;
+      }
+
+      .applicant summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .applicant summary::after {
+        content: "▸";
+        font-size: 0.75rem;
+        color: var(--text-soft);
+        transition: transform 0.2s;
+      }
+
+      .applicant[open] summary::after {
+        transform: rotate(90deg);
+      }
+
+      .rank-badge {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.05rem;
+        background: linear-gradient(145deg, rgba(37, 99, 235, 0.15), rgba(37, 99, 235, 0.05));
+        color: var(--accent);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .rank-badge.gold {
+        background: linear-gradient(145deg, rgba(234, 179, 8, 0.25), rgba(234, 179, 8, 0.08));
+        color: #a16207;
+        border-color: rgba(234, 179, 8, 0.35);
+      }
+
+      .applicant-head {
+        min-width: 0;
+      }
+
+      .applicant-head .name {
+        font-weight: 800;
+        font-size: 1rem;
+        letter-spacing: -0.02em;
+      }
+
+      .applicant-head .meta {
+        font-size: 0.78rem;
+        color: var(--text-soft);
+        margin-top: 0.15rem;
+      }
+
+      .score-stack {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .score-stack .composite {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--accent);
+        line-height: 1.1;
+      }
+
+      .score-stack .breakdown {
+        font-size: 0.68rem;
+        color: var(--text-soft);
+        margin-top: 0.2rem;
+        max-width: 14rem;
+      }
+
+      .pub-panel {
+        padding: 0 1rem 1rem;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+      }
+
+      .pub-panel h3 {
+        margin: 0.75rem 0 0.45rem;
+        font-size: 0.68rem;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .subscores {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+        gap: 0.45rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .subscores div {
+        font-size: 0.72rem;
+        padding: 0.45rem 0.5rem;
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+      }
+
+      .subscores strong {
+        display: block;
+        font-size: 0.95rem;
+        color: var(--text);
+      }
+
+      .pub-table-wrap {
+        overflow-x: auto;
+        border-radius: 0.65rem;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+      }
+
+      table.pub-table {
+        width: 100%;
+        min-width: 42rem;
+        border-collapse: collapse;
+        font-size: 0.74rem;
+      }
+
+      .pub-table th {
+        text-align: left;
+        padding: 0.45rem 0.5rem;
+        background: rgba(37, 99, 235, 0.08);
+        font-size: 0.6rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .pub-table td {
+        padding: 0.45rem 0.5rem;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        vertical-align: top;
+      }
+
+      .pub-table td.num {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .pub-table td.title {
+        font-weight: 650;
+      }
+
+      .tier {
+        display: inline-block;
+        padding: 0.12rem 0.4rem;
+        border-radius: 0.35rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        background: rgba(5, 150, 105, 0.12);
+        color: var(--ok);
+      }
+
+      .tier.q2 {
+        background: rgba(37, 99, 235, 0.12);
+        color: var(--accent);
+      }
+
+      .tier.q3 {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+      }
+
+      .footnote {
+        margin: 0.75rem 1rem 0;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div class="titles">
+            <p class="tagline">Hiring intelligence</p>
+            <h1>Jobs</h1>
+            <p class="sub">
+              Shop the shortlist like a product filter: <strong>publication count</strong>, <strong>experience</strong>,
+              <strong>CGPA band</strong>, and <strong>CV PDF on file</strong>—then tune the ranking mix. Top-10 pubs and
+              demo data only.
+            </p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <div class="layout">
+          <aside class="glass controls" aria-label="Filters and ranking">
+            <h2>Refine candidates</h2>
+            <p class="hint" style="margin: -0.25rem 0 0.75rem">Narrow the pool—like filters on a store.</p>
+
+            <div class="search-row">
+              <label class="visually-hidden" for="q">Search applicants</label>
+              <input id="q" type="search" placeholder="Search name, degree, keyword…" autocomplete="off" />
+            </div>
+
+            <div class="facet">
+              <div class="facet-title">Total publications <span class="facet-hint">(career count, min)</span></div>
+              <div class="facet-value" id="f-pubs-lbl">0+</div>
+              <input id="f-min-pubs" type="range" min="0" max="45" value="0" step="1" />
+            </div>
+
+            <div class="facet">
+              <div class="facet-title">Experience <span class="facet-hint">(years, min)</span></div>
+              <div class="facet-value" id="f-exp-lbl">0+ yrs</div>
+              <input id="f-min-exp" type="range" min="0" max="15" value="0" step="1" />
+            </div>
+
+            <div class="facet">
+              <div class="facet-title">CGPA range <span class="facet-hint">(4.0 scale)</span></div>
+              <div class="facet-value" id="f-cgpa-lbl">2.50 — 4.00</div>
+              <div class="dual-range">
+                <div class="mini">
+                  <label for="f-cgpa-min">Min</label>
+                  <input id="f-cgpa-min" type="range" min="250" max="400" value="250" step="5" />
+                </div>
+                <div class="mini">
+                  <label for="f-cgpa-max">Max</label>
+                  <input id="f-cgpa-max" type="range" min="250" max="400" value="400" step="5" />
+                </div>
+              </div>
+            </div>
+
+            <label class="facet-check">
+              <input type="checkbox" id="f-has-pdf" />
+              <span>
+                <strong>CV has PDF</strong>
+                <span>Only show applicants with a résumé / CV file uploaded</span>
+              </span>
+            </label>
+
+            <button type="button" class="btn-clear-filters" id="f-clear">Clear all filters</button>
+
+            <hr class="facet-divider" />
+
+            <h2>Ranking mix</h2>
+            <p class="hint" style="margin: -0.25rem 0 0.65rem">How to score who’s left—weights normalize to 100%.</p>
+
+            <div class="control-block">
+              <label for="w-pubs">
+                Top 10 publication stack <span class="val" id="w-pubs-v">45%</span>
+              </label>
+              <input id="w-pubs" type="range" min="0" max="100" value="45" />
+              <p class="hint">Venue tier + citation heat across the ten best works.</p>
+            </div>
+
+            <div class="control-block">
+              <label for="w-cgpa">CGPA &amp; class standing <span class="val" id="w-cgpa-v">30%</span></label>
+              <input id="w-cgpa" type="range" min="0" max="100" value="30" />
+              <p class="hint">Normalized on a 3.0–4.0 scale (demo).</p>
+            </div>
+
+            <div class="control-block">
+              <label for="w-impact">Citations &amp; recency <span class="val" id="w-impact-v">15%</span></label>
+              <input id="w-impact" type="range" min="0" max="100" value="15" />
+              <p class="hint">h-index proxy + papers in last 24 months.</p>
+            </div>
+
+            <div class="control-block">
+              <label for="w-exp">Experience &amp; leadership <span class="val" id="w-exp-v">10%</span></label>
+              <input id="w-exp" type="range" min="0" max="100" value="10" />
+              <p class="hint">Years post-degree, team lead, grants (rolled up).</p>
+            </div>
+
+            <p class="formula" id="weight-warning" hidden>
+              Weights are being <strong>normalized</strong> to sum to 100% for a fair composite.
+            </p>
+
+            <p class="formula">
+              <strong>Top-10 pub line score:</strong> tier points + capped citation bump on the best ten. Filters use
+              <strong>total career publication count</strong> (demo), CGPA band, years of experience, and PDF on file.
+            </p>
+          </aside>
+
+          <section class="glass main-panel">
+            <div class="toolbar">
+              <p class="count" id="count-line"><strong>0</strong> applicants</p>
+              <div class="sort-select">
+                <label for="sort">Sort by</label>
+                <select id="sort">
+                  <option value="composite">Composite score</option>
+                  <option value="pubs">Top-10 publication stack</option>
+                  <option value="totalPubs">Total publications</option>
+                  <option value="cgpa">CGPA</option>
+                  <option value="impact">Impact / recency</option>
+                  <option value="exp">Composite experience score</option>
+                  <option value="yearsExp">Years of experience</option>
+                </select>
+              </div>
+            </div>
+            <div class="rank-list" id="rank-list" role="list"></div>
+            <p class="footnote">
+              Refine by total publication count, experience, CGPA band, and whether a CV PDF is on file—then adjust ranking
+              weights. Expand a row for the top-10 table. Production would ingest ORCID / Scholar with governance review.
+            </p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const TIER_POINTS = { Q1: 4, Q2: 3, Q3: 2, Q4: 1, W: 0.5 };
+
+      const APPLICANTS = [
+        {
+          id: "a1",
+          name: "Nusrat Jahan Rahman",
+          degree: "Ph.D. in Computer Science",
+          school: "UAP",
+          cgpa: 3.92,
+          yearsExp: 4,
+          totalPubs: 38,
+          hasCvPdf: true,
+          leadership: 2,
+          hIndex: 12,
+          pubsRecent24m: 3,
+          pubs: [
+            { title: "Graph neural policies for resilient campus scheduling", venue: "IEEE TKDE", tier: "Q1", year: 2024, cites: 28 },
+            { title: "Federated learning with differential privacy at the edge", venue: "ACM CCS", tier: "Q1", year: 2023, cites: 64 },
+            { title: "Energy-aware timetabling via column generation", venue: "EJOR", tier: "Q1", year: 2023, cites: 19 },
+            { title: "Survey: ML in higher-ed operations", venue: "ACM Comput. Surv.", tier: "Q1", year: 2022, cites: 112 },
+            { title: "Robust exam seating under uncertainty", venue: "Computers & OR", tier: "Q2", year: 2022, cites: 14 },
+            { title: "Short paper: fairness in course allocation", venue: "AAAI workshop", tier: "W", year: 2021, cites: 9 },
+            { title: "Campus mobility traces dataset", venue: "Data in Brief", tier: "Q2", year: 2021, cites: 33 },
+            { title: "Heuristics for invigilator assignment", venue: "Annals of OR", tier: "Q2", year: 2020, cites: 22 },
+            { title: "Poster: AR class finder", venue: "UIST adjunct", tier: "W", year: 2020, cites: 5 },
+            { title: "Thesis chapter: complexity of slotting", venue: "UAP repository", tier: "Q4", year: 2019, cites: 3 },
+          ],
+        },
+        {
+          id: "a2",
+          name: "Farhan Kabir",
+          degree: "M.Sc. in EEE (Power)",
+          school: "UAP",
+          cgpa: 3.71,
+          yearsExp: 6,
+          totalPubs: 24,
+          hasCvPdf: true,
+          leadership: 3,
+          hIndex: 8,
+          pubsRecent24m: 2,
+          pubs: [
+            { title: "Microgrid stability with high PV penetration", venue: "IEEE Trans. Power Del.", tier: "Q1", year: 2024, cites: 17 },
+            { title: "Battery degradation models for Bangladesh climate", venue: "Applied Energy", tier: "Q1", year: 2023, cites: 41 },
+            { title: "Demand response in garment clusters", venue: "Energy", tier: "Q1", year: 2023, cites: 26 },
+            { title: "LV distribution losses in Dhaka ring", venue: "IET Gen. Transm. Distrib.", tier: "Q2", year: 2022, cites: 12 },
+            { title: "Protection coordination under harmonics", venue: "Int. J. Electr. Power", tier: "Q2", year: 2021, cites: 18 },
+            { title: "Conference: smart meter pilot", venue: "IEEE ISGT", tier: "W", year: 2021, cites: 6 },
+            { title: "Technical note: grounding in coastal humidity", venue: "IEEE Access", tier: "Q2", year: 2020, cites: 24 },
+            { title: "Case study: campus peak shaving", venue: "Energy Procedia", tier: "Q3", year: 2019, cites: 9 },
+            { title: "Thesis: inverter control", venue: "Institutional", tier: "Q4", year: 2018, cites: 2 },
+            { title: "Workshop abstract: outage mapping", venue: "local symp.", tier: "W", year: 2018, cites: 1 },
+          ],
+        },
+        {
+          id: "a3",
+          name: "Samia Azad",
+          degree: "Pharm.D.",
+          school: "UAP",
+          cgpa: 3.88,
+          yearsExp: 2,
+          totalPubs: 19,
+          hasCvPdf: false,
+          leadership: 1,
+          hIndex: 6,
+          pubsRecent24m: 4,
+          pubs: [
+            { title: "Antibiotic stewardship in tertiary teaching hospitals", venue: "JAC", tier: "Q1", year: 2024, cites: 22 },
+            { title: "Pharmacokinetics in tropical fever cohorts", venue: "Clinical Pharmacokinetics", tier: "Q1", year: 2024, cites: 15 },
+            { title: "Meta-analysis: adherence in polypharmacy", venue: "BMJ Open", tier: "Q1", year: 2023, cites: 38 },
+            { title: "Short communication: excipient stability", venue: "IJ Pharm", tier: "Q2", year: 2023, cites: 11 },
+            { title: "Review: biosimilars uptake in SAARC", venue: "Curr. Med. Res. Opin.", tier: "Q2", year: 2022, cites: 19 },
+            { title: "Letter: drug interaction alerts", venue: "Pharmacy", tier: "Q2", year: 2022, cites: 7 },
+            { title: "Pilot RCT: counseling bundle", venue: "Trials", tier: "Q2", year: 2021, cites: 14 },
+            { title: "Poster: cold chain in campus clinic", venue: "regional conf.", tier: "W", year: 2021, cites: 4 },
+            { title: "Dataset descriptor: anonymized prescriptions", venue: "Sci Data", tier: "Q1", year: 2020, cites: 31 },
+            { title: "Student thesis excerpt: pharmacovigilance", venue: "UAP", tier: "Q4", year: 2019, cites: 2 },
+          ],
+        },
+        {
+          id: "a4",
+          name: "Rafid Hassan",
+          degree: "B.Sc. in Civil Engineering",
+          school: "UAP",
+          cgpa: 3.45,
+          yearsExp: 3,
+          totalPubs: 14,
+          hasCvPdf: true,
+          leadership: 1,
+          hIndex: 5,
+          pubsRecent24m: 1,
+          pubs: [
+            { title: "Seismic retrofit of soft-storey RC frames", venue: "Eng. Struct.", tier: "Q1", year: 2024, cites: 9 },
+            { title: "Sustainable aggregate substitutes in Dhaka mixes", venue: "Constr. Build. Mater.", tier: "Q1", year: 2023, cites: 21 },
+            { title: "Hydrological modeling of peri-urban flooding", venue: "J. Hydrol.", tier: "Q1", year: 2023, cites: 16 },
+            { title: "Campus stormwater bioswale performance", venue: "Water Sci. Technol.", tier: "Q2", year: 2022, cites: 8 },
+            { title: "Finite element vs. field strain: low-rise lab", venue: "Structures", tier: "Q2", year: 2022, cites: 6 },
+            { title: "Conference: slope monitoring with IoT", venue: "GeoCongress", tier: "W", year: 2021, cites: 5 },
+            { title: "Technical note: creep in fly-ash blends", venue: "Mater. Struct.", tier: "Q2", year: 2021, cites: 10 },
+            { title: "Case report: foundation distress near river", venue: "IJSE", tier: "Q3", year: 2020, cites: 4 },
+            { title: "Capstone: retaining wall redesign", venue: "UAP", tier: "Q4", year: 2019, cites: 1 },
+            { title: "Workshop: BIM for small contractors", venue: "industry forum", tier: "W", year: 2019, cites: 2 },
+          ],
+        },
+        {
+          id: "a5",
+          name: "Ayesha Siddiqua",
+          degree: "MBA (Strategy)",
+          school: "UAP",
+          cgpa: 3.62,
+          yearsExp: 7,
+          totalPubs: 11,
+          hasCvPdf: false,
+          leadership: 4,
+          hIndex: 4,
+          pubsRecent24m: 2,
+          pubs: [
+            { title: "ESG disclosure and family firms in emerging markets", venue: "J. Bus. Ethics", tier: "Q1", year: 2024, cites: 11 },
+            { title: "Digital adoption in Bangladesh SMEs", venue: "IJEBR", tier: "Q2", year: 2023, cites: 18 },
+            { title: "Case study: campus startup incubator outcomes", venue: "J. Small Bus. Enterp. Dev.", tier: "Q2", year: 2023, cites: 9 },
+            { title: "Survey instrument: employer satisfaction", venue: "Educ. + Train.", tier: "Q2", year: 2022, cites: 7 },
+            { title: "Teaching note: negotiation simulations", venue: "Decision Sci. J. Educ.", tier: "Q3", year: 2022, cites: 5 },
+            { title: "Conference paper: alumni giving", venue: "AMLE conf.", tier: "W", year: 2021, cites: 3 },
+            { title: "Editorial: hybrid internships", venue: "Higher Educ. Skills", tier: "Q3", year: 2021, cites: 6 },
+            { title: "Book chapter: HE policy in BD", venue: "Springer", tier: "Q4", year: 2020, cites: 12 },
+            { title: "White paper: skills gap (commissioned)", venue: "policy brief", tier: "Q4", year: 2019, cites: 4 },
+            { title: "Blog series: careers office metrics", venue: "Medium", tier: "W", year: 2018, cites: 0 },
+          ],
+        },
+      ];
+
+      function pubLineScore(p) {
+        const tier = TIER_POINTS[p.tier] ?? 1;
+        const citeBump = Math.min(3, Math.log10((p.cites || 0) + 1) * 1.4);
+        return tier * 2.2 + citeBump;
+      }
+
+      function top10Stack(pubs) {
+        const scored = pubs.map((p) => ({ ...p, line: pubLineScore(p) }));
+        scored.sort((a, b) => b.line - a.line);
+        const top = scored.slice(0, 10);
+        const sum = top.reduce((s, p) => s + p.line, 0);
+        return { top, sum, maxTheoretical: 10 * (4 * 2.2 + 3) };
+      }
+
+      function cgpaScore(cgpa) {
+        const lo = 3.0;
+        const hi = 4.0;
+        const t = Math.max(0, Math.min(1, (cgpa - lo) / (hi - lo)));
+        return t * 100;
+      }
+
+      function impactScore(a) {
+        const citePart = Math.min(50, Math.log10(a.hIndex * 8 + a.pubsRecent24m * 15 + 1) * 22);
+        const recentPart = Math.min(50, a.pubsRecent24m * 12);
+        return Math.min(100, citePart + recentPart);
+      }
+
+      function expScore(a) {
+        const y = Math.min(10, a.yearsExp) * 6;
+        const l = Math.min(5, a.leadership) * 8;
+        return Math.min(100, y + l);
+      }
+
+      function normalizeWeights() {
+        const wP = +document.getElementById("w-pubs").value;
+        const wC = +document.getElementById("w-cgpa").value;
+        const wI = +document.getElementById("w-impact").value;
+        const wE = +document.getElementById("w-exp").value;
+        const sum = wP + wC + wI + wE || 1;
+        return { wP: wP / sum, wC: wC / sum, wI: wI / sum, wE: wE / sum, rawSum: sum };
+      }
+
+      function composite(normPub, cgpa, impact, exp, w) {
+        return 100 * (w.wP * normPub + w.wC * (cgpa / 100) + w.wI * (impact / 100) + w.wE * (exp / 100));
+      }
+
+      function enrich() {
+        let maxPubSum = 0;
+        const rows = APPLICANTS.map((a) => {
+          const { top, sum } = top10Stack(a.pubs);
+          maxPubSum = Math.max(maxPubSum, sum);
+          const cg = cgpaScore(a.cgpa);
+          const im = impactScore(a);
+          const ex = expScore(a);
+          return { ...a, top10: top, pubSum: sum, cgpaNorm: cg, impact: im, exp: ex };
+        });
+        rows.forEach((r) => {
+          r.pubNorm = maxPubSum ? r.pubSum / maxPubSum : 0;
+        });
+        return { rows, maxPubSum };
+      }
+
+      let enriched = enrich();
+
+      function tierClass(t) {
+        if (t === "Q1") return "tier";
+        if (t === "Q2") return "tier q2";
+        if (t === "Q3" || t === "Q4") return "tier q3";
+        return "tier q3";
+      }
+
+      function syncCgpaSliders() {
+        const minEl = document.getElementById("f-cgpa-min");
+        const maxEl = document.getElementById("f-cgpa-max");
+        let lo = +minEl.value;
+        let hi = +maxEl.value;
+        if (lo > hi) {
+          if (document.activeElement === minEl) maxEl.value = String(lo);
+          else minEl.value = String(hi);
+        }
+      }
+
+      function updateFacetLabels() {
+        const mp = +document.getElementById("f-min-pubs").value;
+        document.getElementById("f-pubs-lbl").textContent = mp === 0 ? "Any" : mp + "+ indexed";
+        const me = +document.getElementById("f-min-exp").value;
+        document.getElementById("f-exp-lbl").textContent = me === 0 ? "Any" : me + "+ yrs";
+        const lo = (+document.getElementById("f-cgpa-min").value / 100).toFixed(2);
+        const hi = (+document.getElementById("f-cgpa-max").value / 100).toFixed(2);
+        document.getElementById("f-cgpa-lbl").textContent = lo + " — " + hi;
+      }
+
+      function passFacets(a) {
+        const minPubs = +document.getElementById("f-min-pubs").value;
+        const minExp = +document.getElementById("f-min-exp").value;
+        let cgpaLo = +document.getElementById("f-cgpa-min").value / 100;
+        let cgpaHi = +document.getElementById("f-cgpa-max").value / 100;
+        if (cgpaLo > cgpaHi) {
+          const t = cgpaLo;
+          cgpaLo = cgpaHi;
+          cgpaHi = t;
+        }
+        const needPdf = document.getElementById("f-has-pdf").checked;
+        if ((a.totalPubs ?? 0) < minPubs) return false;
+        if (a.yearsExp < minExp) return false;
+        if (a.cgpa < cgpaLo || a.cgpa > cgpaHi) return false;
+        if (needPdf && !a.hasCvPdf) return false;
+        return true;
+      }
+
+      function render() {
+        const w = normalizeWeights();
+        document.getElementById("w-pubs-v").textContent = Math.round(w.wP * 100) + "%";
+        document.getElementById("w-cgpa-v").textContent = Math.round(w.wC * 100) + "%";
+        document.getElementById("w-impact-v").textContent = Math.round(w.wI * 100) + "%";
+        document.getElementById("w-exp-v").textContent = Math.round(w.wE * 100) + "%";
+        const warn = document.getElementById("weight-warning");
+        warn.hidden = Math.abs(w.rawSum - 100) < 3;
+
+        updateFacetLabels();
+
+        const q = document.getElementById("q").value.trim().toLowerCase();
+        const totalPool = enriched.rows.length;
+        let list = enriched.rows.filter((a) => {
+          if (!passFacets(a)) return false;
+          if (!q) return true;
+          const blob = (a.name + " " + a.degree + " " + a.school + " " + a.pubs.map((p) => p.title + p.venue).join(" ")).toLowerCase();
+          return blob.includes(q);
+        });
+
+        list = list.map((a) => ({
+          ...a,
+          composite: composite(a.pubNorm, a.cgpaNorm, a.impact, a.exp, w),
+        }));
+
+        const sortKey = document.getElementById("sort").value;
+        const order = {
+          composite: (x, y) => y.composite - x.composite,
+          pubs: (x, y) => y.pubSum - x.pubSum,
+          totalPubs: (x, y) => (y.totalPubs ?? 0) - (x.totalPubs ?? 0),
+          cgpa: (x, y) => y.cgpa - x.cgpa,
+          impact: (x, y) => y.impact - x.impact,
+          exp: (x, y) => y.exp - x.exp,
+          yearsExp: (x, y) => y.yearsExp - x.yearsExp,
+        };
+        list.sort(order[sortKey] || order.composite);
+
+        document.getElementById("count-line").innerHTML = `Showing <strong>${list.length}</strong> of <strong>${totalPool}</strong> applicants`;
+
+        const host = document.getElementById("rank-list");
+        host.innerHTML = "";
+        if (!list.length) {
+          host.innerHTML =
+            '<p class="empty-facet" style="padding:1rem 1.25rem;color:var(--text-soft);font-size:0.88rem;margin:0">No applicants match these filters. Try <strong>Clear all filters</strong> or widen CGPA and publication minimums.</p>';
+          return;
+        }
+
+        const frag = document.createDocumentFragment();
+        list.forEach((a, i) => {
+          const det = document.createElement("details");
+          det.className = "applicant";
+          det.setAttribute("role", "listitem");
+
+          const rank = i + 1;
+          const badgeClass = rank === 1 ? "rank-badge gold" : "rank-badge";
+
+          const pubRows = a.top10
+            .map(
+              (p, idx) => `<tr>
+              <td>${idx + 1}</td>
+              <td class="title">${p.title}</td>
+              <td>${p.venue}</td>
+              <td><span class="${tierClass(p.tier)}">${p.tier}</span></td>
+              <td class="num">${p.year}</td>
+              <td class="num">${p.cites}</td>
+              <td class="num">${p.line.toFixed(2)}</td>
+            </tr>`
+            )
+            .join("");
+
+          const pdfHtml = a.hasCvPdf
+            ? '<span class="pdf-tag ok">PDF</span>'
+            : '<span class="pdf-tag">No PDF</span>';
+
+          det.innerHTML = `
+            <summary>
+              <div class="${badgeClass}">${rank}</div>
+              <div class="applicant-head">
+                <div class="name">${a.name} ${pdfHtml}</div>
+                <div class="meta">${a.degree} · ${a.school} · CGPA ${a.cgpa.toFixed(2)} · ${a.yearsExp} yrs exp · ${a.totalPubs ?? 0} total pubs</div>
+              </div>
+              <div class="score-stack">
+                <div class="composite">${a.composite.toFixed(1)}</div>
+                <div class="breakdown">Pub stack ${a.pubSum.toFixed(1)} · CGPA ${a.cgpaNorm.toFixed(0)} · Impact ${a.impact.toFixed(
+            0
+          )} · Exp ${a.exp.toFixed(0)}</div>
+              </div>
+            </summary>
+            <div class="pub-panel">
+              <div class="subscores">
+                <div>Total pubs <strong>${a.totalPubs ?? "—"}</strong><span style="color:var(--text-soft);font-size:0.65rem;display:block">career (demo)</span></div>
+                <div>Top-10 stack <strong>${a.pubSum.toFixed(1)}</strong><span style="color:var(--text-soft);font-size:0.65rem;display:block">normalized ${(a.pubNorm * 100).toFixed(0)} / 100</span></div>
+                <div>CGPA map <strong>${a.cgpaNorm.toFixed(1)}</strong><span style="color:var(--text-soft);font-size:0.65rem;display:block">of 100</span></div>
+                <div>Impact <strong>${a.impact.toFixed(1)}</strong></div>
+                <div>Experience <strong>${a.exp.toFixed(1)}</strong></div>
+              </div>
+              <h3>Top 10 publications (used in ranking)</h3>
+              <div class="pub-table-wrap">
+                <table class="pub-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Title</th>
+                      <th>Venue</th>
+                      <th>Tier</th>
+                      <th>Year</th>
+                      <th>Cites</th>
+                      <th>Line score</th>
+                    </tr>
+                  </thead>
+                  <tbody>${pubRows}</tbody>
+                </table>
+              </div>
+            </div>
+          `;
+          frag.appendChild(det);
+        });
+
+        host.appendChild(frag);
+      }
+
+      ["w-pubs", "w-cgpa", "w-impact", "w-exp"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", render);
+      });
+      document.getElementById("sort").addEventListener("change", render);
+      document.getElementById("q").addEventListener("input", render);
+
+      ["f-min-pubs", "f-min-exp", "f-has-pdf"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", render);
+        document.getElementById(id).addEventListener("change", render);
+      });
+      ["f-cgpa-min", "f-cgpa-max"].forEach((id) => {
+        const el = document.getElementById(id);
+        el.addEventListener("input", () => {
+          syncCgpaSliders();
+          render();
+        });
+      });
+
+      document.getElementById("f-clear").addEventListener("click", () => {
+        document.getElementById("f-min-pubs").value = "0";
+        document.getElementById("f-min-exp").value = "0";
+        document.getElementById("f-cgpa-min").value = "250";
+        document.getElementById("f-cgpa-max").value = "400";
+        document.getElementById("f-has-pdf").checked = false;
+        document.getElementById("q").value = "";
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>

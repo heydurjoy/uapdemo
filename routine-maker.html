@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>All in One Routine Maker · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+        --best: #059669;
+        --good: #2563eb;
+        --mid: #d97706;
+        --bad: #dc2626;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.55;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, #e8f4ff 0%, #f0f7ff 22%, #f5f0ff 55%, #fff5f0 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(147, 197, 253, 0.55) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 15%, rgba(196, 181, 253, 0.45) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 45% at 50% 90%, rgba(253, 186, 116, 0.35) 0%, transparent 55%);
+      }
+
+      .page {
+        max-width: 54rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .top h1 {
+        margin: 0 0 0.35rem;
+        font-size: clamp(1.2rem, 2.8vw, 1.45rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+        max-width: 36rem;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      section.panel {
+        padding: 1.1rem 1.2rem 1.2rem;
+        margin-bottom: 1rem;
+      }
+
+      section.panel h2 {
+        margin: 0 0 0.65rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      section.panel p {
+        margin: 0 0 0.65rem;
+        font-size: 0.9rem;
+        color: var(--text-soft);
+      }
+
+      section.panel p:last-child {
+        margin-bottom: 0;
+      }
+
+      .callout {
+        margin-top: 0.75rem;
+        padding: 0.75rem 0.9rem;
+        border-radius: 0.75rem;
+        background: rgba(37, 99, 235, 0.08);
+        border: 1px solid rgba(37, 99, 235, 0.15);
+        font-size: 0.85rem;
+        color: var(--text);
+        line-height: 1.45;
+      }
+
+      .callout strong {
+        color: var(--text);
+      }
+
+      .score-hero {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .score-ring {
+        width: 5.5rem;
+        height: 5.5rem;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: conic-gradient(var(--good) 252deg, rgba(15, 23, 42, 0.08) 0);
+        flex-shrink: 0;
+      }
+
+      .score-ring-inner {
+        width: 4.35rem;
+        height: 4.35rem;
+        border-radius: 50%;
+        background: var(--glass-bg);
+        backdrop-filter: blur(8px);
+        display: grid;
+        place-items: center;
+        flex-direction: column;
+        border: 1px solid var(--glass-stroke);
+      }
+
+      .score-ring-inner b {
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--accent);
+      }
+
+      .score-ring-inner span {
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-soft);
+      }
+
+      .score-copy {
+        flex: 1;
+        min-width: 12rem;
+      }
+
+      .score-copy p {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+      }
+
+      .slot-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.82rem;
+      }
+
+      .slot-table th,
+      .slot-table td {
+        padding: 0.55rem 0.65rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+      }
+
+      .slot-table th {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-soft);
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      .slot-table td:first-child {
+        font-weight: 650;
+        white-space: nowrap;
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 0.15rem 0.45rem;
+        border-radius: 999px;
+        font-size: 0.65rem;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .pill.best {
+        background: rgba(5, 150, 105, 0.12);
+        color: var(--best);
+      }
+      .pill.good {
+        background: rgba(37, 99, 235, 0.12);
+        color: var(--good);
+      }
+      .pill.mid {
+        background: rgba(217, 119, 6, 0.14);
+        color: var(--mid);
+      }
+      .pill.bad {
+        background: rgba(220, 38, 38, 0.12);
+        color: var(--bad);
+      }
+
+      .slot-score {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1rem;
+        margin-top: 0.85rem;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+      }
+
+      .legend span::before {
+        content: "";
+        display: inline-block;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 2px;
+        margin-right: 0.35rem;
+        vertical-align: middle;
+      }
+
+      .legend .l-best::before {
+        background: var(--best);
+      }
+      .legend .l-good::before {
+        background: var(--good);
+      }
+      .legend .l-mid::before {
+        background: var(--mid);
+      }
+      .legend .l-bad::before {
+        background: var(--bad);
+      }
+
+      ul.notify-list {
+        margin: 0.5rem 0 0;
+        padding-left: 1.15rem;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+      }
+
+      ul.notify-list li {
+        margin-bottom: 0.35rem;
+      }
+
+      .board-intro {
+        margin-bottom: 0.85rem;
+      }
+
+      .board-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 0.75rem;
+        margin-bottom: 0.85rem;
+      }
+
+      .board-stats span {
+        font-size: 0.72rem;
+        font-weight: 650;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        color: var(--text-soft);
+      }
+
+      .board-stats strong {
+        color: var(--text);
+        font-weight: 750;
+      }
+
+      .board-wrap {
+        overflow-x: auto;
+        margin: 0 -0.25rem;
+        padding: 0 0.25rem 0.25rem;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .board-table {
+        width: 100%;
+        min-width: 36rem;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.74rem;
+      }
+
+      .board-table th,
+      .board-table td {
+        padding: 0.45rem 0.5rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        vertical-align: top;
+        text-align: left;
+      }
+
+      .board-table th {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-soft);
+        background: rgba(255, 255, 255, 0.45);
+        white-space: nowrap;
+      }
+
+      .board-table th:first-child,
+      .board-table td.room {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: rgba(252, 253, 255, 0.97);
+        border-right: 1px solid rgba(15, 23, 42, 0.08);
+        font-weight: 650;
+        min-width: 7.5rem;
+      }
+
+      .board-table thead th:first-child {
+        z-index: 2;
+      }
+
+      .board-table td.empty {
+        color: rgba(15, 23, 42, 0.22);
+        text-align: center;
+        font-weight: 600;
+      }
+
+      .cell-slot {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      .dept-tag {
+        display: inline-block;
+        width: fit-content;
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.3rem;
+        font-size: 0.58rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .dept-tag.cse {
+        background: rgba(37, 99, 235, 0.15);
+        color: #1d4ed8;
+      }
+      .dept-tag.eee {
+        background: rgba(234, 88, 12, 0.14);
+        color: #c2410c;
+      }
+      .dept-tag.pharm {
+        background: rgba(5, 150, 105, 0.14);
+        color: #047857;
+      }
+      .dept-tag.arch {
+        background: rgba(124, 58, 237, 0.14);
+        color: #6d28d9;
+      }
+      .dept-tag.civil {
+        background: rgba(71, 85, 105, 0.16);
+        color: #334155;
+      }
+
+      .course-code {
+        font-weight: 700;
+        font-size: 0.72rem;
+        color: var(--text);
+        letter-spacing: -0.02em;
+      }
+
+      .fac-name {
+        font-size: 0.65rem;
+        color: var(--text-soft);
+        line-height: 1.25;
+      }
+
+      .board-foot {
+        margin-top: 0.75rem;
+        font-size: 0.78rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div>
+            <h1>All in One Routine Maker</h1>
+            <p class="sub">
+              Build and publish class routines in one place. Get a quality score for each draft—early-morning-heavy
+              schedules score lower; mid-morning slots (around 11:00) score best for focus and attendance patterns.
+            </p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <section class="panel glass" aria-labelledby="h-board">
+          <h2 id="h-board">Campus routine board (demo)</h2>
+          <p class="board-intro">
+            Departments and faculty enter sections into a <strong>shared board</strong> so everyone sees room and lab usage
+            across UAP. Coordinators reduce clashes and fill dead slots—<strong>making the best use of classrooms and labs</strong>
+            before publish.
+          </p>
+          <div class="board-stats" role="status">
+            <span><strong>Mon</strong> snapshot</span>
+            <span>Classrooms <strong>94%</strong> utilized</span>
+            <span>Labs <strong>88%</strong> utilized</span>
+            <span>Conflicts <strong>0</strong></span>
+          </div>
+          <div class="board-wrap">
+            <table class="board-table">
+              <thead>
+                <tr>
+                  <th scope="col">Room / lab</th>
+                  <th scope="col">9:00–10:30</th>
+                  <th scope="col">10:45–12:15</th>
+                  <th scope="col">12:30–2:00</th>
+                  <th scope="col">2:15–3:45</th>
+                  <th scope="col">4:00–5:30</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="room">A-Block 301</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag cse">CSE</span>
+                      <span class="course-code">CSE 3211</span>
+                      <span class="fac-name">Prof. Nadia Rahman</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag eee">EEE</span>
+                      <span class="course-code">EEE 2102</span>
+                      <span class="fac-name">Prof. Karim</span>
+                    </div>
+                  </td>
+                  <td class="empty">—</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag pharm">Pharmacy</span>
+                      <span class="course-code">PHR 301</span>
+                      <span class="fac-name">Dr. Samira</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag civil">Civil</span>
+                      <span class="course-code">CE 2205</span>
+                      <span class="fac-name">Engr. Rafiul</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="room">B-Block 205 (lab)</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag arch">Arch</span>
+                      <span class="course-code">ARC 2104</span>
+                      <span class="fac-name">Studio A</span>
+                    </div>
+                  </td>
+                  <td class="empty">—</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag cse">CSE</span>
+                      <span class="course-code">CSE 2200 Lab</span>
+                      <span class="fac-name">Mr. Tanvir</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag eee">EEE</span>
+                      <span class="course-code">EEE 2401</span>
+                      <span class="fac-name">Dr. Hasan</span>
+                    </div>
+                  </td>
+                  <td class="empty">—</td>
+                </tr>
+                <tr>
+                  <td class="room">Comp Lab 1</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag cse">CSE</span>
+                      <span class="course-code">CSE 1102</span>
+                      <span class="fac-name">Section 2A</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag cse">CSE</span>
+                      <span class="course-code">CSE 3211 Lab</span>
+                      <span class="fac-name">Prof. Nadia</span>
+                    </div>
+                  </td>
+                  <td class="empty">—</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag pharm">Pharmacy</span>
+                      <span class="course-code">PHR 110 Lab</span>
+                      <span class="fac-name">Dr. Imran</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag arch">Arch</span>
+                      <span class="course-code">ARC CAD Lab</span>
+                      <span class="fac-name">Studio B</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="room">Chem Lab 2</td>
+                  <td class="empty">—</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag pharm">Pharmacy</span>
+                      <span class="course-code">PHR 205</span>
+                      <span class="fac-name">Lab cohort A</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag pharm">Pharmacy</span>
+                      <span class="course-code">PHR 205</span>
+                      <span class="fac-name">Lab cohort B</span>
+                    </div>
+                  </td>
+                  <td class="empty">—</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag civil">Civil</span>
+                      <span class="course-code">CE Mat. Lab</span>
+                      <span class="fac-name">Materials lab</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="room">Structures lab</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag civil">Civil</span>
+                      <span class="course-code">CE 3310</span>
+                      <span class="fac-name">Dr. Alam</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag civil">Civil</span>
+                      <span class="course-code">CE 3310</span>
+                      <span class="fac-name">Section 2</span>
+                    </div>
+                  </td>
+                  <td class="empty">—</td>
+                  <td>
+                    <div class="cell-slot">
+                      <span class="dept-tag arch">Arch</span>
+                      <span class="course-code">ARC Structures</span>
+                      <span class="fac-name">Guest slot</span>
+                    </div>
+                  </td>
+                  <td class="empty">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="board-foot">
+            Faculty and dept admins edit their cells; the board highlights overlaps and suggests open slots in under-used
+            rooms so UAP’s <strong>classrooms and labs</strong> stay full without double-booking—then you publish to the
+            official routine.
+          </p>
+        </section>
+
+        <section class="panel glass" aria-labelledby="h-notify">
+          <h2 id="h-notify">After you publish</h2>
+          <p>
+            When a routine is <strong>published</strong>, it becomes the official reference for students, faculty, and rooms
+            on your scope (program, section, or campus).
+          </p>
+          <p>
+            If <strong>anything changes later</strong>—room swap, time shift, section merge, or a new slot—the system tracks
+            which people and resources are <strong>affected</strong>.
+          </p>
+          <div class="callout">
+            <strong>Affected parties are notified automatically:</strong> in-app alerts plus <strong>email</strong> stating
+            that <strong>their routine may have changed</strong>, with a link to the updated grid and a short diff of what
+            moved (demo—wire your notification service in production).
+          </div>
+          <p style="margin-top: 0.85rem">Typical recipients:</p>
+          <ul class="notify-list">
+            <li>Students enrolled in the touched sections</li>
+            <li>Faculty teaching those slots</li>
+            <li>Lab / room coordinators when venues change</li>
+          </ul>
+        </section>
+
+        <section class="panel glass" aria-labelledby="h-score">
+          <h2 id="h-score">Routine quality score (demo)</h2>
+          <p>
+            Each saved routine gets a <strong>score</strong> from how class times distribute across the day. Rules are
+            configurable; the example below treats very early starts as harder on students and rewards late-morning blocks.
+          </p>
+
+          <div class="score-hero">
+            <div class="score-ring" aria-hidden="true">
+              <div class="score-ring-inner">
+                <b>72</b>
+                <span>/100</span>
+              </div>
+            </div>
+            <div class="score-copy">
+              <p>
+                <strong style="color: var(--text)">Sample routine “CSE 3A · Fall”</strong> — Good overall, but two early
+                sessions pull the score down. Moving one 8:00 block toward 11:00 would likely raise this into the 80s.
+              </p>
+            </div>
+          </div>
+
+          <table class="slot-table">
+            <thead>
+              <tr>
+                <th scope="col">Time window</th>
+                <th scope="col">Quality band</th>
+                <th scope="col">Slot score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>8:00 – 9:30</td>
+                <td><span class="pill bad">Hard</span> Early morning</td>
+                <td class="slot-score">35</td>
+              </tr>
+              <tr>
+                <td>9:45 – 11:15</td>
+                <td><span class="pill good">Good</span></td>
+                <td class="slot-score">78</td>
+              </tr>
+              <tr>
+                <td>11:30 – 1:00</td>
+                <td><span class="pill best">Best</span> ~11:00 peak</td>
+                <td class="slot-score">95</td>
+              </tr>
+              <tr>
+                <td>2:30 – 4:00</td>
+                <td><span class="pill mid">OK</span> Post-lunch dip</td>
+                <td class="slot-score">62</td>
+              </tr>
+              <tr>
+                <td>4:15 – 5:45</td>
+                <td><span class="pill good">Good</span></td>
+                <td class="slot-score">74</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="legend" aria-label="Score legend">
+            <span class="l-best">Best — e.g. late morning</span>
+            <span class="l-good">Good</span>
+            <span class="l-mid">OK / mixed</span>
+            <span class="l-bad">Hard — e.g. very early</span>
+          </div>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>

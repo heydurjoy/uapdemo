@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Campus Newsfeed · UAP Future Demo</title>
+    <style>
+      :root {
+        --bg: #f4f6fb;
+        --surface: rgba(255, 255, 255, 0.72);
+        --stroke: rgba(255, 255, 255, 0.9);
+        --line: rgba(15, 23, 42, 0.07);
+        --text: #0b1220;
+        --muted: #5c6578;
+        --accent: #2563eb;
+        --shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+        --shadow-lg: 0 12px 48px rgba(15, 23, 42, 0.08);
+        --club: #7c3aed;
+        --club-bg: rgba(124, 58, 237, 0.1);
+        --faculty: #2563eb;
+        --faculty-bg: rgba(37, 99, 235, 0.1);
+        --registrar: #0891b2;
+        --registrar-bg: rgba(8, 145, 178, 0.1);
+        --dean: #d97706;
+        --dean-bg: rgba(217, 119, 6, 0.1);
+        --vc: #db2777;
+        --vc-bg: rgba(219, 39, 119, 0.1);
+        --student: #4f46e5;
+        --student-bg: rgba(79, 70, 229, 0.1);
+        --like-on: #ec4899;
+        --radius: 1.15rem;
+        --radius-sm: 0.65rem;
+        --col-border: rgba(15, 23, 42, 0.08);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        color: var(--text);
+        line-height: 1.55;
+        background: var(--bg);
+      }
+
+      .shell {
+        min-height: 100vh;
+        background: radial-gradient(1200px 600px at 10% -10%, rgba(37, 99, 235, 0.08), transparent),
+          radial-gradient(900px 500px at 100% 0%, rgba(124, 58, 237, 0.06), transparent),
+          linear-gradient(180deg, #eef2ff 0%, var(--bg) 35%, #faf8ff 100%);
+      }
+
+      .layout {
+        max-width: 1240px;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 0 clamp(0.5rem, 2vw, 1rem) 2rem;
+      }
+
+      @media (min-width: 1100px) {
+        .layout {
+          grid-template-columns: 240px minmax(0, 560px) 300px;
+          gap: 0 1.25rem;
+          align-items: start;
+          padding: 0 1rem 2rem;
+        }
+      }
+
+      @media (max-width: 1099px) {
+        .layout {
+          display: flex;
+          flex-direction: column;
+          max-width: 560px;
+        }
+        .main {
+          order: -1;
+        }
+      }
+
+      .left {
+        position: sticky;
+        top: 0;
+        padding: 1rem 0.5rem 1rem 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        height: fit-content;
+      }
+
+      @media (max-width: 1099px) {
+        .left {
+          flex-direction: row;
+          flex-wrap: wrap;
+          align-items: center;
+          position: relative;
+          padding: 0.85rem 0 0;
+          border-bottom: 1px solid var(--col-border);
+          margin-bottom: 0.75rem;
+        }
+      }
+
+      .logo {
+        font-weight: 800;
+        font-size: 1.05rem;
+        letter-spacing: -0.04em;
+        color: var(--text);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .logo span {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.55rem;
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 0.75rem;
+      }
+
+      .nav-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      @media (max-width: 1099px) {
+        .nav-list {
+          flex-direction: row;
+          flex-wrap: wrap;
+          flex: 1;
+          justify-content: flex-end;
+        }
+      }
+
+      .nav-list a {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.55rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 650;
+        color: var(--muted);
+        text-decoration: none;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+
+      .nav-list a:hover {
+        background: rgba(15, 23, 42, 0.05);
+        color: var(--text);
+      }
+
+      .nav-list a.is-active {
+        color: var(--accent);
+        font-weight: 750;
+      }
+
+      .nav-ic {
+        width: 1.25rem;
+        height: 1.25rem;
+        opacity: 0.9;
+      }
+
+      .left-profile {
+        margin-top: auto;
+        padding: 0.65rem 0.75rem;
+        border-radius: var(--radius);
+        background: var(--surface);
+        border: 1px solid var(--stroke);
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      @media (max-width: 1099px) {
+        .left-profile {
+          width: 100%;
+          margin-top: 0.5rem;
+        }
+      }
+
+      .left-profile .av {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 999px;
+        background: linear-gradient(145deg, #e0e7ff, #c7d2fe);
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+      }
+
+      .left-profile .meta {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .left-profile .meta b {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+      }
+
+      .left-profile .meta span {
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+
+      .main {
+        border-left: 1px solid var(--col-border);
+        border-right: 1px solid var(--col-border);
+        min-width: 0;
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      @media (max-width: 1099px) {
+        .main {
+          border-left: none;
+          border-right: none;
+          border-radius: var(--radius);
+          overflow: hidden;
+        }
+      }
+
+      .main-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--col-border);
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(12px);
+        position: sticky;
+        top: 0;
+        z-index: 5;
+      }
+
+      .main-head h1 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .back {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.7rem;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid var(--line);
+      }
+
+      .back:hover {
+        background: #fff;
+      }
+
+      .compose {
+        padding: 0.85rem 1rem 1rem;
+        border-bottom: 1px solid var(--col-border);
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .compose-inner {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+      }
+
+      .compose .avatar-lg {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 999px;
+        background: linear-gradient(145deg, #e0e7ff, #a5b4fc);
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        border: 1px solid var(--line);
+      }
+
+      .compose-fields {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .compose textarea {
+        width: 100%;
+        min-height: 5rem;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.92rem;
+        line-height: 1.45;
+        font-family: inherit;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.95);
+        resize: vertical;
+        margin-bottom: 0.65rem;
+      }
+
+      .compose textarea:focus {
+        outline: 2px solid rgba(37, 99, 235, 0.2);
+        border-color: rgba(37, 99, 235, 0.45);
+      }
+
+      .compose textarea::placeholder {
+        color: #94a3b8;
+      }
+
+      .compose-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .compose-hint {
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+
+      .btn-post {
+        padding: 0.5rem 1.2rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(135deg, #2563eb, #6366f1);
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      }
+
+      .btn-post:hover {
+        filter: brightness(1.06);
+      }
+
+      .btn-post:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .right {
+        position: sticky;
+        top: 0.75rem;
+        padding: 1rem 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        height: fit-content;
+      }
+
+      @media (max-width: 1099px) {
+        .right {
+          position: relative;
+          top: 0;
+          padding: 0.5rem 0 0;
+        }
+      }
+
+      .side-card {
+        background: var(--surface);
+        border: 1px solid var(--stroke);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .side-card h3 {
+        margin: 0;
+        padding: 0.75rem 1rem;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .search-fake {
+        margin: 0;
+        padding: 0.65rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(241, 245, 249, 0.9);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+
+      .trend-item,
+      .follow-item {
+        padding: 0.65rem 1rem;
+        font-size: 0.8rem;
+        border-bottom: 1px solid var(--line);
+        cursor: default;
+      }
+
+      .trend-item:last-child,
+      .follow-item:last-child {
+        border-bottom: none;
+      }
+
+      .trend-item .topic {
+        font-weight: 700;
+        color: var(--text);
+        display: block;
+        margin-bottom: 0.15rem;
+      }
+
+      .trend-item .meta {
+        font-size: 0.7rem;
+        color: var(--muted);
+      }
+
+      .follow-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .follow-item .fa {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 999px;
+        background: #f1f5f9;
+        display: grid;
+        place-items: center;
+        font-size: 0.95rem;
+      }
+
+      .follow-item .info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .follow-item .info b {
+        font-size: 0.8rem;
+        display: block;
+      }
+
+      .follow-item .info span {
+        font-size: 0.68rem;
+        color: var(--muted);
+      }
+
+      .btn-follow {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #fff;
+        cursor: pointer;
+      }
+
+      .btn-follow:hover {
+        background: #f8fafc;
+      }
+
+      .side-foot {
+        font-size: 0.65rem;
+        color: var(--muted);
+        padding: 0 0.5rem;
+        line-height: 1.5;
+      }
+
+      .filters-wrap {
+        padding: 0.6rem 0.75rem 0.85rem;
+        border-bottom: 1px solid var(--col-border);
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      .filters {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        padding: 0.4rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid var(--line);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: var(--shadow);
+      }
+
+      .filter {
+        appearance: none;
+        border: none;
+        padding: 0.4rem 0.85rem;
+        font-size: 0.76rem;
+        font-weight: 650;
+        letter-spacing: 0.02em;
+        border-radius: 999px;
+        cursor: pointer;
+        color: var(--muted);
+        background: transparent;
+        transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+      }
+
+      .filter:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.8);
+      }
+
+      .filter[aria-pressed="true"] {
+        color: #fff;
+        background: linear-gradient(135deg, #1d4ed8, #6366f1);
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      }
+
+      .feed {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 0.75rem 0.65rem 1.5rem;
+      }
+
+      .post {
+        background: var(--surface);
+        border: 1px solid var(--stroke);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        overflow: hidden;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+
+      .post-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        padding: 1rem 1.05rem 0.65rem;
+      }
+
+      .avatar {
+        width: 2.65rem;
+        height: 2.65rem;
+        border-radius: 0.85rem;
+        display: grid;
+        place-items: center;
+        font-size: 1.2rem;
+        background: linear-gradient(145deg, #fff, #f1f5f9);
+        border: 1px solid var(--line);
+        flex-shrink: 0;
+        font-family: "Segoe UI Emoji", sans-serif;
+      }
+
+      .post-meta {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .post-meta .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem 0.5rem;
+      }
+
+      .author {
+        font-weight: 700;
+        font-size: 0.9rem;
+        letter-spacing: -0.02em;
+      }
+
+      .handle {
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .badge {
+        font-size: 0.62rem;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.2rem 0.45rem;
+        border-radius: 0.35rem;
+      }
+
+      .badge.club {
+        color: var(--club);
+        background: var(--club-bg);
+      }
+      .badge.faculty {
+        color: var(--faculty);
+        background: var(--faculty-bg);
+      }
+      .badge.registrar {
+        color: var(--registrar);
+        background: var(--registrar-bg);
+      }
+      .badge.dean {
+        color: var(--dean);
+        background: var(--dean-bg);
+      }
+      .badge.vc {
+        color: var(--vc);
+        background: var(--vc-bg);
+      }
+      .badge.student {
+        color: var(--student);
+        background: var(--student-bg);
+      }
+
+      .time {
+        margin-left: auto;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .post-body {
+        padding: 0 1.05rem 0.85rem;
+      }
+
+      .post-title {
+        margin: 0 0 0.4rem;
+        font-size: 0.98rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.35;
+      }
+
+      .post-text {
+        margin: 0;
+        font-size: 0.86rem;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .post-actions {
+        display: flex;
+        align-items: center;
+        border-top: 1px solid var(--line);
+        padding: 0.35rem 0.5rem;
+      }
+
+      .action {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0.55rem 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--muted);
+        background: none;
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+
+      .action:hover {
+        background: rgba(15, 23, 42, 0.04);
+        color: var(--text);
+      }
+
+      .action svg {
+        width: 1.05rem;
+        height: 1.05rem;
+        opacity: 0.85;
+      }
+
+      .action.like[aria-pressed="true"] {
+        color: var(--like-on);
+      }
+
+      .action.like[aria-pressed="true"] svg {
+        fill: var(--like-on);
+        stroke: var(--like-on);
+      }
+
+      .count {
+        font-variant-numeric: tabular-nums;
+        font-weight: 650;
+      }
+
+      .comments-panel {
+        padding: 0 1.05rem 1rem;
+        border-top: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      .comments-panel[hidden] {
+        display: none;
+      }
+
+      .comment-list {
+        margin: 0 0 0.65rem;
+        padding: 0.65rem 0 0;
+        list-style: none;
+      }
+
+      .comment-list li {
+        font-size: 0.8rem;
+        padding: 0.45rem 0;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+      }
+
+      .comment-list li:last-child {
+        border-bottom: none;
+      }
+
+      .comment-list strong {
+        color: var(--text);
+        font-weight: 650;
+      }
+
+      .no-comments {
+        margin: 0;
+        padding: 0.5rem 0 0;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .composer {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+      }
+
+      .composer input {
+        flex: 1;
+        padding: 0.55rem 0.75rem;
+        font-size: 0.82rem;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.9);
+        font-family: inherit;
+      }
+
+      .composer input:focus {
+        outline: 2px solid rgba(37, 99, 235, 0.25);
+        border-color: rgba(37, 99, 235, 0.4);
+      }
+
+      .composer button {
+        padding: 0.55rem 0.85rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        color: #fff;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .composer button:hover {
+        filter: brightness(1.05);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 1.25rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(120%);
+        padding: 0.65rem 1.1rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #fff;
+        background: rgba(15, 23, 42, 0.92);
+        border-radius: 999px;
+        box-shadow: var(--shadow-lg);
+        opacity: 0;
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+        z-index: 100;
+        pointer-events: none;
+      }
+
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+
+      .empty {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="layout">
+        <aside class="left" aria-label="Primary">
+          <a class="logo" href="index.html"><span>U</span> UAP Future</a>
+          <nav>
+            <ul class="nav-list">
+              <li>
+                <a href="index.html"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</a>
+              </li>
+              <li>
+                <a href="newsfeed.html" class="is-active"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg> Newsfeed</a>
+              </li>
+              <li>
+                <a href="#"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Messages</a>
+              </li>
+              <li>
+                <a href="#"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Saved</a>
+              </li>
+            </ul>
+          </nav>
+          <div class="left-profile">
+            <div class="av" aria-hidden="true">🙂</div>
+            <div class="meta">
+              <b>Demo Student</b>
+              <span>@you · UAP</span>
+            </div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <header class="main-head">
+            <h1>Home</h1>
+            <a class="back" href="index.html">← Demo hub</a>
+          </header>
+
+          <div class="compose">
+            <div class="compose-inner">
+              <div class="avatar-lg" aria-hidden="true">🙂</div>
+              <div class="compose-fields">
+                <label for="compose-text" class="visually-hidden">New post</label>
+                <textarea id="compose-text" placeholder="What's happening on campus?" maxlength="560"></textarea>
+                <div class="compose-bar">
+                  <span class="compose-hint">Everyone can see your post · clubs, faculty &amp; offices post here too</span>
+                  <button type="button" class="btn-post" id="compose-submit">Post</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filters-wrap">
+            <div class="filters" role="toolbar" aria-label="Filter by publisher">
+              <button type="button" class="filter" data-filter="all" aria-pressed="true">All</button>
+              <button type="button" class="filter" data-filter="club" aria-pressed="false">Clubs</button>
+              <button type="button" class="filter" data-filter="faculty" aria-pressed="false">Faculty</button>
+              <button type="button" class="filter" data-filter="registrar" aria-pressed="false">Registrar</button>
+              <button type="button" class="filter" data-filter="dean" aria-pressed="false">Deans</button>
+              <button type="button" class="filter" data-filter="vc" aria-pressed="false">VC</button>
+              <button type="button" class="filter" data-filter="student" aria-pressed="false">Students</button>
+            </div>
+          </div>
+
+          <div class="feed" id="feed"></div>
+        </main>
+
+        <aside class="right" aria-label="Trending">
+          <div class="search-fake" role="search">🔍 Search campus posts…</div>
+          <div class="side-card">
+            <h3>What’s happening</h3>
+            <div class="trend-item">
+              <span class="topic">#UAPConvocation</span>
+              <span class="meta">2.4k posts · Trending in Dhaka</span>
+            </div>
+            <div class="trend-item">
+              <span class="topic">Robotics scrimmage</span>
+              <span class="meta">Campus · 892 posts</span>
+            </div>
+            <div class="trend-item">
+              <span class="topic">Add/drop deadline</span>
+              <span class="meta">Registrar · 1.1k posts</span>
+            </div>
+          </div>
+          <div class="side-card">
+            <h3>Who to follow</h3>
+            <div class="follow-item">
+              <span class="fa" aria-hidden="true">📋</span>
+              <div class="info"><b>Registrar</b><span>@uap_registrar</span></div>
+              <button type="button" class="btn-follow">Follow</button>
+            </div>
+            <div class="follow-item">
+              <span class="fa" aria-hidden="true">🤖</span>
+              <div class="info"><b>Robotics Club</b><span>@uap_robotics</span></div>
+              <button type="button" class="btn-follow">Follow</button>
+            </div>
+            <div class="follow-item">
+              <span class="fa" aria-hidden="true">🏛️</span>
+              <div class="info"><b>VC Office</b><span>@uap_vc</span></div>
+              <button type="button" class="btn-follow">Follow</button>
+            </div>
+          </div>
+          <p class="side-foot">© UAP Future Demo · Terms · Privacy · Cookies</p>
+        </aside>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      const BADGE = {
+        club: ["Club", "club"],
+        faculty: ["Faculty", "faculty"],
+        registrar: ["Registrar", "registrar"],
+        dean: ["Dean's office", "dean"],
+        vc: ["VC Office", "vc"],
+        student: ["Student", "student"],
+      };
+
+      let posts = [
+        {
+          id: "p1",
+          source: "vc",
+          author: "Office of the Vice Chancellor",
+          handle: "@uap_vc",
+          avatar: "🏛️",
+          time: "1h",
+          title: "Convocation rehearsal schedule published",
+          body: "Final-year students: please review the slot assignments for gown fitting and rehearsal. Updates will also appear on the student portal.",
+          likes: 128,
+          liked: false,
+          shares: 34,
+          comments: [
+            { who: "Ayesha K.", text: "Thanks for the clear timeline." },
+            { who: "Dept. Rep", text: "Will slides be shared beforehand?" },
+          ],
+        },
+        {
+          id: "p2",
+          source: "dean",
+          author: "Dr. Mahmud Hassan",
+          handle: "@dean_eng",
+          avatar: "🎓",
+          time: "3h",
+          title: "Engineering town hall — Friday 4 PM",
+          body: "Open forum on lab upgrades and thesis timelines. Bring your cohort questions; program leads will join for the last 20 minutes.",
+          likes: 89,
+          liked: true,
+          shares: 12,
+          comments: [{ who: "Faculty Council", text: "Slides will be circulated after the session." }],
+        },
+        {
+          id: "p3",
+          source: "registrar",
+          author: "Registrar's Office",
+          handle: "@uap_registrar",
+          avatar: "📋",
+          time: "5h",
+          title: "Course add/drop window closes April 12",
+          body: "Late requests require chair approval and a brief rationale form. Processing time is 2–3 business days after submission.",
+          likes: 256,
+          liked: false,
+          shares: 67,
+          comments: [],
+        },
+        {
+          id: "p4",
+          source: "faculty",
+          author: "Prof. Nadia Rahman",
+          handle: "@nadia.cse",
+          avatar: "💡",
+          time: "Yesterday",
+          title: "CSE 3211 — guest lecture next week",
+          body: "We're hosting a lead engineer from a local product team on agile handoffs. Attendance counts toward participation credit.",
+          likes: 45,
+          liked: false,
+          shares: 8,
+          comments: [{ who: "Class rep", text: "Will it be streamed?" }],
+        },
+        {
+          id: "p5",
+          source: "club",
+          author: "UAP Robotics Club",
+          handle: "@uap_robotics",
+          avatar: "🤖",
+          time: "Yesterday",
+          title: "Inter-university scrimmage — volunteers needed",
+          body: "We need two field techs and one MC for April 20. Pizza for the crew; sign up via the form linked in our bio.",
+          likes: 72,
+          liked: false,
+          shares: 19,
+          comments: [
+            { who: "Tanvir", text: "Signed up for field tech." },
+            { who: "Alumni board", text: "Proud to sponsor snacks." },
+          ],
+        },
+        {
+          id: "p6",
+          source: "club",
+          author: "Literary Society",
+          handle: "@uap_lit",
+          avatar: "📚",
+          time: "2d",
+          title: "Spring anthology — submit by April 8",
+          body: "Poetry and short fiction (max 1200 words). Theme: “Future campus.” Faculty mentors available for one review pass.",
+          likes: 33,
+          liked: false,
+          shares: 5,
+          comments: [],
+        },
+      ];
+
+      let activeFilter = "all";
+
+      function iconHeart(outline) {
+        if (outline) {
+          return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+        }
+        return '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+      }
+
+      function iconComment() {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+      }
+
+      function iconShare() {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/></svg>';
+      }
+
+      function escapeHtml(s) {
+        const d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function renderPost(p) {
+        const [label, badgeClass] = BADGE[p.source];
+        const commentsOpen = p._commentsOpen;
+        const commentItems = p.comments
+          .map((c) => `<li><strong>${escapeHtml(c.who)}</strong> ${escapeHtml(c.text)}</li>`)
+          .join("");
+
+        return `
+          <article class="post" data-id="${p.id}" data-source="${p.source}">
+            <div class="post-head">
+              <div class="avatar" aria-hidden="true">${p.avatar}</div>
+              <div class="post-meta">
+                <div class="row">
+                  <span class="author">${escapeHtml(p.author)}</span>
+                  <span class="handle">${escapeHtml(p.handle)}</span>
+                  <span class="badge ${badgeClass}">${label}</span>
+                  <span class="time">${escapeHtml(p.time)}</span>
+                </div>
+              </div>
+            </div>
+            <div class="post-body">
+              <h2 class="post-title">${escapeHtml(p.title)}</h2>
+              ${p.body ? `<p class="post-text">${escapeHtml(p.body)}</p>` : ""}
+            </div>
+            <div class="post-actions">
+              <button type="button" class="action like" data-act="like" aria-pressed="${p.liked}" aria-label="Like">
+                ${iconHeart(!p.liked)}
+                <span class="count">${p.likes}</span>
+              </button>
+              <button type="button" class="action" data-act="comment" aria-label="Comment">
+                ${iconComment()}
+                <span class="count">${p.comments.length}</span>
+              </button>
+              <button type="button" class="action" data-act="share" aria-label="Share">
+                ${iconShare()}
+                <span class="count">${p.shares}</span>
+              </button>
+            </div>
+            <div class="comments-panel" id="comments-${p.id}" ${commentsOpen ? "" : "hidden"}>
+              ${
+                p.comments.length
+                  ? `<ul class="comment-list">${commentItems}</ul>`
+                  : '<p class="no-comments">No comments yet — start the thread.</p>'
+              }
+              <div class="composer">
+                <input type="text" placeholder="Write a comment…" aria-label="New comment" id="input-${p.id}" />
+                <button type="button" data-act="send-comment">Post</button>
+              </div>
+            </div>
+          </article>`;
+      }
+
+      function render() {
+        const feed = document.getElementById("feed");
+        const visible = posts.filter((p) => activeFilter === "all" || activeFilter === p.source);
+        if (!visible.length) {
+          feed.innerHTML = '<p class="empty">No posts in this category yet.</p>';
+          return;
+        }
+        feed.innerHTML = visible.map(renderPost).join("");
+        bindPostEvents();
+        if (window.location.hash) {
+          const h = window.location.hash.slice(1);
+          const target = document.querySelector(`.post[data-id="${h}"]`);
+          if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+
+      function bindPostEvents() {
+        document.querySelectorAll(".post").forEach((el) => {
+          const id = el.dataset.id;
+          el.querySelectorAll("[data-act]").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              const act = btn.dataset.act;
+              const post = posts.find((x) => x.id === id);
+              if (!post) return;
+
+              if (act === "like") {
+                post.liked = !post.liked;
+                post.likes += post.liked ? 1 : -1;
+                render();
+              } else if (act === "comment") {
+                post._commentsOpen = !post._commentsOpen;
+                render();
+                if (post._commentsOpen) {
+                  const inp = document.getElementById(`input-${id}`);
+                  if (inp) inp.focus();
+                }
+              } else if (act === "share") {
+                const url = `${window.location.origin}${window.location.pathname}#${id}`;
+                navigator.clipboard.writeText(url).then(
+                  () => {
+                    post.shares += 1;
+                    showToast("Link copied — share anywhere");
+                    render();
+                  },
+                  () => showToast("Copy blocked — share this page URL manually")
+                );
+              } else if (act === "send-comment") {
+                const inp = document.getElementById(`input-${id}`);
+                const text = (inp && inp.value.trim()) || "";
+                if (!text) return;
+                post.comments.push({ who: "You", text });
+                post._commentsOpen = true;
+                if (inp) inp.value = "";
+                render();
+              }
+            });
+          });
+          const inp = el.querySelector(`#input-${id}`);
+          if (inp) {
+            inp.addEventListener("keydown", (ev) => {
+              if (ev.key === "Enter") {
+                ev.preventDefault();
+                const post = posts.find((x) => x.id === id);
+                const text = inp.value.trim();
+                if (!post || !text) return;
+                post.comments.push({ who: "You", text });
+                post._commentsOpen = true;
+                inp.value = "";
+                render();
+              }
+            });
+          }
+        });
+      }
+
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(showToast._tid);
+        showToast._tid = setTimeout(() => t.classList.remove("show"), 2400);
+      }
+
+      document.querySelectorAll(".filter").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeFilter = btn.dataset.filter;
+          document.querySelectorAll(".filter").forEach((b) => {
+            b.setAttribute("aria-pressed", b.dataset.filter === activeFilter ? "true" : "false");
+          });
+          render();
+        });
+      });
+
+      document.getElementById("compose-submit").addEventListener("click", () => {
+        const ta = document.getElementById("compose-text");
+        const text = ta.value.trim();
+        if (!text) {
+          showToast("Write something first");
+          return;
+        }
+        const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
+        let title;
+        let body;
+        if (lines.length === 1) {
+          title = lines[0].slice(0, 120);
+          body = "";
+        } else {
+          title = lines[0].slice(0, 120);
+          body = lines.slice(1).join("\n");
+        }
+        posts.unshift({
+          id: "u" + Date.now(),
+          source: "student",
+          author: "You",
+          handle: "@you",
+          avatar: "🙂",
+          time: "now",
+          title,
+          body,
+          likes: 0,
+          liked: false,
+          shares: 0,
+          comments: [],
+        });
+        ta.value = "";
+        activeFilter = "all";
+        document.querySelectorAll(".filter").forEach((b) => {
+          b.setAttribute("aria-pressed", b.dataset.filter === "all" ? "true" : "false");
+        });
+        render();
+        showToast("Posted to campus feed");
+      });
+
+      document.querySelectorAll(".btn-follow").forEach((btn) => {
+        btn.addEventListener("click", () => showToast("Follow is a demo — wire your API here"));
+      });
+
+      render();
+    </script>
+  </body>
+</html>

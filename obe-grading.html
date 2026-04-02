@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OBE Based Grading · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+        --excellent: #059669;
+        --excellent-bg: rgba(5, 150, 105, 0.12);
+        --proficient: #2563eb;
+        --proficient-bg: rgba(37, 99, 235, 0.12);
+        --developing: #d97706;
+        --developing-bg: rgba(217, 119, 6, 0.14);
+        --attention: #dc2626;
+        --attention-bg: rgba(220, 38, 38, 0.1);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, #e8f4ff 0%, #f0f7ff 22%, #f5f0ff 55%, #fff5f0 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(147, 197, 253, 0.55) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 15%, rgba(196, 181, 253, 0.45) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 45% at 50% 90%, rgba(253, 186, 116, 0.35) 0%, transparent 55%);
+      }
+
+      .page {
+        max-width: 52rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .top h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      .student-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem 1.75rem;
+        margin-bottom: 1.25rem;
+        padding: 0.9rem 1.15rem;
+        font-size: 0.85rem;
+      }
+
+      .student-bar dt {
+        margin: 0;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .student-bar dd {
+        margin: 0.15rem 0 0;
+        font-weight: 600;
+      }
+
+      .grade-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.35rem;
+        padding: 1.1rem 1.25rem;
+      }
+
+      .grade-box {
+        text-align: center;
+        padding: 0.65rem;
+        border-radius: 0.85rem;
+        background: rgba(255, 255, 255, 0.45);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+      }
+
+      .grade-box .label {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        margin-bottom: 0.35rem;
+      }
+
+      .grade-box .value {
+        font-size: 1.65rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        color: var(--accent);
+      }
+
+      .grade-box .value.small {
+        font-size: 1.35rem;
+      }
+
+      .grade-box .hint {
+        display: block;
+        margin-top: 0.35rem;
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--text-soft);
+      }
+
+      .section-title {
+        margin: 0 0 0.65rem;
+        padding: 0 0.25rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem 1.1rem;
+        margin-bottom: 0.85rem;
+        padding: 0.65rem 1rem;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        margin: 0 0.5rem 0.75rem;
+        border-radius: 0.85rem;
+      }
+
+      table {
+        width: 100%;
+        min-width: 36rem;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.8rem;
+      }
+
+      thead th {
+        padding: 0.55rem 0.65rem;
+        text-align: left;
+        font-weight: 650;
+        font-size: 0.68rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        background: rgba(255, 255, 255, 0.75);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      }
+
+      thead th:nth-child(n + 3) {
+        text-align: center;
+      }
+
+      tbody td {
+        padding: 0.75rem 0.65rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+      }
+
+      tbody tr:hover td {
+        background: rgba(37, 99, 235, 0.04);
+      }
+
+      .clo-id {
+        font-weight: 700;
+        color: var(--accent);
+        white-space: nowrap;
+      }
+
+      .clo-desc {
+        max-width: 18rem;
+        color: var(--text);
+        line-height: 1.35;
+      }
+
+      td.num {
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+
+      .bar-wrap {
+        min-width: 7rem;
+      }
+
+      .bar-track {
+        height: 0.45rem;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+      }
+
+      .bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        transition: width 0.4s ease;
+      }
+
+      .bar-fill.excellent {
+        background: linear-gradient(90deg, #059669, #34d399);
+      }
+      .bar-fill.proficient {
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
+      }
+      .bar-fill.developing {
+        background: linear-gradient(90deg, #d97706, #fbbf24);
+      }
+      .bar-fill.attention {
+        background: linear-gradient(90deg, #dc2626, #f87171);
+      }
+
+      .bar-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+        font-size: 0.72rem;
+      }
+
+      .bar-label strong {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .badge.excellent {
+        background: var(--excellent-bg);
+        color: var(--excellent);
+      }
+      .badge.proficient {
+        background: var(--proficient-bg);
+        color: var(--proficient);
+      }
+      .badge.developing {
+        background: var(--developing-bg);
+        color: var(--developing);
+      }
+      .badge.attention {
+        background: var(--attention-bg);
+        color: var(--attention);
+      }
+
+      .note {
+        margin: 0;
+        padding: 0.75rem 1rem 1rem;
+        font-size: 0.75rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+
+      .note strong {
+        color: var(--text);
+      }
+
+      @media (max-width: 640px) {
+        .top {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div>
+            <h1>OBE Based Grading</h1>
+            <p class="sub">Course grade plus CLO attempts, attainment counts, and how well each outcome was met.</p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <dl class="student-bar glass" id="student-bar"></dl>
+
+        <p class="section-title">Course grade</p>
+        <div class="grade-row glass" id="grade-row"></div>
+
+        <p class="section-title">Course Learning Outcomes (CLO)</p>
+        <div class="legend glass">
+          <span><strong>Attempts</strong> — mapped assessments (CT, lab, mid, final, etc.)</span>
+          <span><strong>Achieved</strong> — times you met the attainment threshold</span>
+          <span><strong>Attainment %</strong> — weighted performance on that CLO</span>
+        </div>
+
+        <div class="glass" style="padding: 0 0 0.25rem">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">CLO</th>
+                  <th scope="col">Outcome</th>
+                  <th scope="col">Attempts</th>
+                  <th scope="col">Achieved</th>
+                  <th scope="col">How well (attainment)</th>
+                </tr>
+              </thead>
+              <tbody id="clo-body"></tbody>
+            </table>
+          </div>
+          <p class="note" id="footnote"></p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const student = {
+        name: "Ayesha Khan",
+        id: "22101123",
+        course: "CSE 3211 — Software Engineering",
+        section: "A",
+        semester: "Fall 2025",
+      };
+
+      const courseGrade = {
+        letter: "A-",
+        gradePoints: 3.67,
+        percent: 87.4,
+        passing: true,
+      };
+
+      /** @type {{ id: string, title: string, attempts: number, achieved: number, attainment: number }[]} */
+      const clos = [
+        {
+          id: "CLO1",
+          title: "Apply software design patterns and architectural styles to medium-scale systems.",
+          attempts: 6,
+          achieved: 5,
+          attainment: 86,
+        },
+        {
+          id: "CLO2",
+          title: "Analyze user requirements and translate them into models (UML, use cases).",
+          attempts: 4,
+          achieved: 4,
+          attainment: 92,
+        },
+        {
+          id: "CLO3",
+          title: "Evaluate testing strategies and quality assurance practices for a given project.",
+          attempts: 5,
+          achieved: 3,
+          attainment: 71,
+        },
+        {
+          id: "CLO4",
+          title: "Create project documentation and present design decisions to peers.",
+          attempts: 3,
+          achieved: 3,
+          attainment: 88,
+        },
+        {
+          id: "CLO5",
+          title: "Demonstrate teamwork and version-control workflows in a collaborative codebase.",
+          attempts: 8,
+          achieved: 7,
+          attainment: 79,
+        },
+      ];
+
+      function bandFromAttainment(p) {
+        if (p >= 85) return { key: "excellent", label: "Excellent" };
+        if (p >= 70) return { key: "proficient", label: "Proficient" };
+        if (p >= 55) return { key: "developing", label: "Developing" };
+        return { key: "attention", label: "Needs support" };
+      }
+
+      function renderStudent() {
+        const el = document.getElementById("student-bar");
+        el.innerHTML = `
+          <div><dt>Student</dt><dd>${student.name}</dd></div>
+          <div><dt>ID</dt><dd>${student.id}</dd></div>
+          <div><dt>Course</dt><dd>${student.course}</dd></div>
+          <div><dt>Section</dt><dd>${student.section}</dd></div>
+          <div><dt>Semester</dt><dd>${student.semester}</dd></div>`;
+      }
+
+      function renderGrade() {
+        const el = document.getElementById("grade-row");
+        el.innerHTML = `
+          <div class="grade-box">
+            <span class="label">Letter grade</span>
+            <span class="value">${courseGrade.letter}</span>
+            <span class="hint">Final letter (OBE weighted)</span>
+          </div>
+          <div class="grade-box">
+            <span class="label">Grade points</span>
+            <span class="value small">${courseGrade.gradePoints.toFixed(2)}</span>
+            <span class="hint">On 4.0 scale</span>
+          </div>
+          <div class="grade-box">
+            <span class="label">Course %</span>
+            <span class="value small">${courseGrade.percent.toFixed(1)}%</span>
+            <span class="hint">Overall course score</span>
+          </div>`;
+      }
+
+      function renderClos() {
+        const tbody = document.getElementById("clo-body");
+        const frag = document.createDocumentFragment();
+
+        for (const c of clos) {
+          const b = bandFromAttainment(c.attainment);
+          const tr = document.createElement("tr");
+
+          tr.innerHTML = `
+            <td class="clo-id">${c.id}</td>
+            <td class="clo-desc">${c.title}</td>
+            <td class="num">${c.attempts}</td>
+            <td class="num">${c.achieved} <span style="font-weight:500;color:var(--text-soft)">/ ${c.attempts}</span></td>
+            <td>
+              <div class="bar-wrap">
+                <div class="bar-track" aria-hidden="true">
+                  <div class="bar-fill ${b.key}" style="width:${c.attainment}%"></div>
+                </div>
+                <div class="bar-label">
+                  <strong>${c.attainment}%</strong>
+                  <span class="badge ${b.key}">${b.label}</span>
+                </div>
+              </div>
+            </td>`;
+          frag.appendChild(tr);
+        }
+
+        tbody.appendChild(frag);
+
+        document.getElementById("footnote").innerHTML =
+          "<strong>Note:</strong> “Attempts” counts assessments mapped to each CLO. “Achieved” counts how many of those you reached at or above the program threshold. " +
+          "“Attainment %” is the weighted performance used for CO attainment reporting.";
+      }
+
+      renderStudent();
+      renderGrade();
+      renderClos();
+    </script>
+  </body>
+</html>
