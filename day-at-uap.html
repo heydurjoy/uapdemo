@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Your day at UAP · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+        --slot-h: 2.25rem;
+        --hour-start: 8;
+        --hour-end: 19;
+        --type-exam: #dc2626;
+        --type-exam-bg: rgba(220, 38, 38, 0.1);
+        --type-test: #2563eb;
+        --type-test-bg: rgba(37, 99, 235, 0.1);
+        --type-mod: #7c3aed;
+        --type-mod-bg: rgba(124, 58, 237, 0.12);
+        --type-deadline: #d97706;
+        --type-deadline-bg: rgba(217, 119, 6, 0.12);
+        --type-event: #0891b2;
+        --type-event-bg: rgba(8, 145, 178, 0.1);
+        --type-task: #059669;
+        --type-task-bg: rgba(5, 150, 105, 0.12);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, #e8f4ff 0%, #f0f7ff 22%, #f5f0ff 55%, #fff5f0 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(147, 197, 253, 0.55) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 15%, rgba(196, 181, 253, 0.45) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 45% at 50% 90%, rgba(253, 186, 116, 0.35) 0%, transparent 55%);
+      }
+
+      .page {
+        max-width: 72rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem 1.25rem;
+      }
+
+      .top h1 {
+        margin: 0 0 0.35rem;
+        font-size: clamp(1.2rem, 2.8vw, 1.45rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+        max-width: 38rem;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.65rem 1rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .toolbar-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .toolbar-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        margin-right: 0.25rem;
+      }
+
+      .seg {
+        display: inline-flex;
+        border-radius: 0.65rem;
+        padding: 0.2rem;
+        background: rgba(15, 23, 42, 0.06);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+      }
+
+      .seg button {
+        border: none;
+        background: transparent;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-soft);
+        padding: 0.4rem 0.75rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+      }
+
+      .seg button[aria-pressed="true"] {
+        background: #fff;
+        color: var(--text);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+      }
+
+      .nav-dates {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .nav-dates button {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.55rem;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        background: rgba(255, 255, 255, 0.65);
+        font-size: 1rem;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--text);
+      }
+
+      .nav-dates button:hover {
+        background: #fff;
+      }
+
+      .range-label {
+        font-size: 0.9rem;
+        font-weight: 650;
+        min-width: 11rem;
+        text-align: center;
+        color: var(--text);
+      }
+
+      .btn-today {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border-radius: 0.55rem;
+        border: 1px solid rgba(37, 99, 235, 0.25);
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--accent);
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .btn-today:hover {
+        background: rgba(37, 99, 235, 0.16);
+      }
+
+      .btn-ai-summary {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border-radius: 0.55rem;
+        border: 1px solid rgba(124, 58, 237, 0.28);
+        background: rgba(124, 58, 237, 0.08);
+        color: #5b21b6;
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .btn-ai-summary:hover {
+        background: rgba(124, 58, 237, 0.14);
+      }
+
+      .btn-ai-summary[aria-pressed="true"] {
+        background: rgba(124, 58, 237, 0.18);
+        border-color: rgba(124, 58, 237, 0.45);
+      }
+
+      .ai-summary {
+        margin-bottom: 1rem;
+        padding: 1rem 1.15rem 1.1rem;
+      }
+
+      .ai-summary h2 {
+        margin: 0 0 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .ai-summary .lead {
+        margin: 0 0 0.85rem;
+        font-size: 0.88rem;
+        color: var(--text);
+        line-height: 1.45;
+      }
+
+      .ai-summary .lead strong {
+        font-weight: 650;
+        color: #5b21b6;
+      }
+
+      .ai-summary-timeline {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-left: 2px solid rgba(124, 58, 237, 0.25);
+        margin-left: 0.45rem;
+      }
+
+      .ai-summary-timeline li {
+        position: relative;
+        padding: 0.35rem 0 0.35rem 1rem;
+        font-size: 0.84rem;
+        line-height: 1.4;
+      }
+
+      .ai-summary-timeline li::before {
+        content: "";
+        position: absolute;
+        left: -0.36rem;
+        top: 0.55rem;
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        background: #7c3aed;
+        border: 2px solid rgba(255, 255, 255, 0.95);
+        box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.35);
+      }
+
+      .ai-summary-timeline .when {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--text-soft);
+        margin-bottom: 0.15rem;
+      }
+
+      .ai-summary-timeline .what {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .ai-summary-timeline .kind {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-soft);
+        margin-top: 0.15rem;
+      }
+
+      .ai-summary-foot {
+        margin: 0.85rem 0 0;
+        font-size: 0.7rem;
+        color: var(--text-soft);
+        line-height: 1.4;
+      }
+
+      .ai-summary-empty {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
+        gap: 1rem;
+        align-items: start;
+      }
+
+      @media (max-width: 960px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .agenda-panel {
+          order: -1;
+        }
+      }
+
+      .cal-panel {
+        padding: 0.75rem 0.75rem 1rem;
+        min-width: 0;
+      }
+
+      .cal-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .cal-inner {
+        min-width: min(100%, 42rem);
+      }
+
+      .cal-wrap {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      .cal-header-row {
+        display: grid;
+        grid-template-columns: 3rem repeat(var(--cols, 1), minmax(5.5rem, 1fr));
+        gap: 0;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      }
+
+      .cal-body-row {
+        display: grid;
+        grid-template-columns: 3rem repeat(var(--cols, 1), minmax(5.5rem, 1fr));
+        gap: 0;
+        align-items: stretch;
+      }
+
+      .cal-head-cell {
+        padding: 0.5rem 0.35rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-soft);
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .cal-head-cell.corner {
+        border-right: 1px solid rgba(15, 23, 42, 0.06);
+      }
+
+      .cal-head-cell strong {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 750;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        text-transform: none;
+      }
+
+      .cal-head-cell.is-today strong {
+        color: var(--accent);
+      }
+
+      .time-col {
+        border-right: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(248, 250, 252, 0.6);
+      }
+
+      .time-slot {
+        height: var(--slot-h);
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--text-soft);
+        padding: 0 0.35rem 0 0.5rem;
+        text-align: right;
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        padding-top: 0.15rem;
+      }
+
+      .time-slot:first-child {
+        border-top: none;
+      }
+
+      .day-col {
+        position: relative;
+        border-left: 1px solid rgba(15, 23, 42, 0.06);
+        min-height: calc((var(--hour-end) - var(--hour-start)) * var(--slot-h));
+      }
+
+      .hour-line {
+        height: var(--slot-h);
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+        pointer-events: none;
+      }
+
+      .hour-line:first-child {
+        border-top: none;
+      }
+
+      .event-block {
+        position: absolute;
+        left: 0.2rem;
+        right: 0.2rem;
+        border-radius: 0.45rem;
+        padding: 0.25rem 0.4rem;
+        font-size: 0.68rem;
+        line-height: 1.25;
+        overflow: hidden;
+        cursor: default;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+      }
+
+      .event-block .t {
+        font-weight: 700;
+        display: block;
+      }
+
+      .event-block .m {
+        opacity: 0.92;
+        font-size: 0.65rem;
+      }
+
+      .type-exam {
+        background: var(--type-exam-bg);
+        color: var(--type-exam);
+        border-color: rgba(220, 38, 38, 0.25);
+      }
+      .type-class_test {
+        background: var(--type-test-bg);
+        color: var(--type-test);
+        border-color: rgba(37, 99, 235, 0.22);
+      }
+      .type-moderation {
+        background: var(--type-mod-bg);
+        color: var(--type-mod);
+        border-color: rgba(124, 58, 237, 0.22);
+      }
+      .type-deadline {
+        background: var(--type-deadline-bg);
+        color: var(--type-deadline);
+        border-color: rgba(217, 119, 6, 0.25);
+      }
+      .type-meeting {
+        background: var(--type-event-bg);
+        color: var(--type-event);
+        border-color: rgba(8, 145, 178, 0.22);
+      }
+      .type-task_head {
+        background: var(--type-task-bg);
+        color: var(--type-task);
+        border-color: rgba(5, 150, 105, 0.25);
+      }
+
+      .badge.type-exam {
+        background: var(--type-exam-bg);
+        color: var(--type-exam);
+      }
+      .badge.type-class_test {
+        background: var(--type-test-bg);
+        color: var(--type-test);
+      }
+      .badge.type-moderation {
+        background: var(--type-mod-bg);
+        color: var(--type-mod);
+      }
+      .badge.type-deadline {
+        background: var(--type-deadline-bg);
+        color: var(--type-deadline);
+      }
+      .badge.type-meeting {
+        background: var(--type-event-bg);
+        color: var(--type-event);
+      }
+      .badge.type-task_head {
+        background: var(--type-task-bg);
+        color: var(--type-task);
+      }
+
+      .agenda-panel {
+        padding: 1rem 1.1rem 1.15rem;
+      }
+
+      .agenda-panel h2 {
+        margin: 0 0 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-bottom: 0.85rem;
+      }
+
+      .chip {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        background: rgba(255, 255, 255, 0.45);
+        color: var(--text-soft);
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .chip[aria-pressed="true"] {
+        background: rgba(37, 99, 235, 0.14);
+        border-color: rgba(37, 99, 235, 0.3);
+        color: var(--text);
+      }
+
+      .agenda-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        max-height: min(70vh, 32rem);
+        overflow-y: auto;
+      }
+
+      .agenda-item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.5rem 0.65rem;
+        padding: 0.65rem 0.5rem;
+        border-radius: 0.65rem;
+        margin-bottom: 0.4rem;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        background: rgba(255, 255, 255, 0.4);
+      }
+
+      .agenda-item time {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-soft);
+        white-space: nowrap;
+      }
+
+      .agenda-item .body {
+        min-width: 0;
+      }
+
+      .agenda-item .title {
+        font-size: 0.85rem;
+        font-weight: 650;
+        margin: 0 0 0.2rem;
+        line-height: 1.3;
+      }
+
+      .agenda-item .meta {
+        margin: 0;
+        font-size: 0.75rem;
+        color: var(--text-soft);
+        line-height: 1.35;
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 0.62rem;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.35rem;
+        margin-right: 0.35rem;
+        vertical-align: middle;
+      }
+
+      .legend {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(15, 23, 42, 0.08);
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        line-height: 1.5;
+      }
+
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-right: 0.65rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .dot {
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .empty-cal {
+        padding: 2rem 1rem;
+        text-align: center;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div>
+            <h1>Your day at UAP</h1>
+            <p class="sub">
+              One place for faculty, students, and staff: classes, exams, moderation deadlines, and tasks from your
+              head—switch between day, three-day, and week views, with a single agenda list alongside.
+            </p>
+          </div>
+          <a class="back" href="index.html">← Hub</a>
+        </header>
+
+        <div class="toolbar glass" role="toolbar" aria-label="Calendar controls">
+          <div class="toolbar-group">
+            <span class="toolbar-label">View</span>
+            <div class="seg" role="group" aria-label="Calendar view mode">
+              <button type="button" id="viewDay" aria-pressed="false">Day</button>
+              <button type="button" id="view3" aria-pressed="true">3 days</button>
+              <button type="button" id="viewWeek" aria-pressed="false">Week</button>
+            </div>
+          </div>
+          <div class="toolbar-group">
+            <div class="nav-dates">
+              <button type="button" id="navPrev" aria-label="Previous">‹</button>
+              <span class="range-label" id="rangeLabel" aria-live="polite"></span>
+              <button type="button" id="navNext" aria-label="Next">›</button>
+            </div>
+            <button type="button" class="btn-today" id="btnToday">Today</button>
+          </div>
+          <div class="toolbar-group">
+            <span class="toolbar-label">Assist</span>
+            <button
+              type="button"
+              class="btn-ai-summary"
+              id="btnAiSummary"
+              aria-pressed="false"
+              aria-expanded="false"
+              aria-controls="aiSummaryPanel"
+            >
+              AI summary
+            </button>
+          </div>
+        </div>
+
+        <section id="aiSummaryPanel" class="ai-summary glass" hidden aria-label="AI summary for today at UAP">
+          <h2>Today at UAP (example)</h2>
+          <div id="aiSummaryBody"></div>
+        </section>
+
+        <div class="layout">
+          <section class="cal-panel glass" aria-label="Calendar">
+            <div class="cal-scroll">
+              <div class="cal-inner" id="calRoot"></div>
+            </div>
+          </section>
+
+          <aside class="agenda-panel glass">
+            <h2>Agenda &amp; deadlines</h2>
+            <div class="filter-row" id="filterRow" role="group" aria-label="Filter by type"></div>
+            <ul class="agenda-list" id="agendaList"></ul>
+            <p class="legend">
+              <strong style="color: var(--text); font-weight: 650">Demo data.</strong> In production this would sync
+              exams, class tests, question moderation windows, registrar deadlines, and assignments from your head of
+              department.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var H0 = 8;
+        var H1 = 19;
+        var SLOT = 2.25;
+
+        var TYPE_LABELS = {
+          exam: "Exam",
+          class_test: "Class test",
+          moderation: "Moderation",
+          deadline: "Deadline",
+          meeting: "Event",
+          task_head: "From head",
+        };
+
+        function isoLocal(d) {
+          var y = d.getFullYear();
+          var m = pad(d.getMonth() + 1);
+          var day = pad(d.getDate());
+          var hh = pad(d.getHours());
+          var mm = pad(d.getMinutes());
+          return y + "-" + m + "-" + day + "T" + hh + ":" + mm + ":00";
+        }
+
+        function atHour(baseDay, h, m) {
+          var x = new Date(baseDay);
+          x.setHours(h, m || 0, 0, 0);
+          return x;
+        }
+
+        function buildDemo() {
+          var t0 = startOfDay(state.anchor);
+          var d0 = t0;
+          var d1 = addDays(t0, 1);
+          var d2 = addDays(t0, 2);
+          var d3 = addDays(t0, 3);
+          var dm1 = addDays(t0, -1);
+          return [
+            {
+              id: "1",
+              type: "task_head",
+              title: "Submit CSE 4101 internal marks",
+              detail: "Assigned by Head, CSE — due end of day",
+              start: isoLocal(atHour(d0, 16, 0)),
+              end: isoLocal(atHour(d0, 17, 0)),
+            },
+            {
+              id: "2",
+              type: "moderation",
+              title: "Question moderation — Data Structures",
+              detail: "Panel Room B — bring marked script sample",
+              start: isoLocal(atHour(d0, 10, 0)),
+              end: isoLocal(atHour(d0, 11, 30)),
+            },
+            {
+              id: "3",
+              type: "class_test",
+              title: "Class test — Discrete Math (CSE 2103)",
+              detail: "Section A — 45 minutes",
+              start: isoLocal(atHour(d0, 14, 0)),
+              end: isoLocal(atHour(d0, 14, 45)),
+            },
+            {
+              id: "4",
+              type: "meeting",
+              title: "Dept. curriculum sync",
+              detail: "Short Zoom — OBE mapping updates",
+              start: isoLocal(atHour(d1, 9, 0)),
+              end: isoLocal(atHour(d1, 10, 0)),
+            },
+            {
+              id: "5",
+              type: "deadline",
+              title: "Final exam form — faculty attestation",
+              detail: "Registrar portal closes 11:59 PM",
+              start: isoLocal(atHour(d1, 23, 0)),
+              end: isoLocal(atHour(d1, 23, 30)),
+            },
+            {
+              id: "6",
+              type: "exam",
+              title: "Midterm — Software Engineering",
+              detail: "Hall 3 · invigilation roster published",
+              start: isoLocal(atHour(d2, 8, 30)),
+              end: isoLocal(atHour(d2, 10, 30)),
+            },
+            {
+              id: "7",
+              type: "task_head",
+              title: "Upload exam attendance sheet scan",
+              detail: "From Head, CSE — after Midterm SE",
+              start: isoLocal(atHour(d2, 11, 0)),
+              end: isoLocal(atHour(d2, 11, 30)),
+            },
+            {
+              id: "8",
+              type: "moderation",
+              title: "Moderation packet due — Operating Systems",
+              detail: "Submit PDF to exam cell folder",
+              start: isoLocal(atHour(d3, 17, 0)),
+              end: isoLocal(atHour(d3, 17, 30)),
+            },
+            {
+              id: "9",
+              type: "class_test",
+              title: "Quiz — Numerical Methods",
+              detail: "Make-up slot for absentees",
+              start: isoLocal(atHour(dm1, 15, 0)),
+              end: isoLocal(atHour(dm1, 15, 40)),
+            },
+          ];
+        }
+
+        var state = {
+          anchor: startOfDay(new Date()),
+          view: "3d",
+          filters: null,
+          showAiSummary: false,
+        };
+
+        function pad(n) {
+          return n < 10 ? "0" + n : "" + n;
+        }
+
+        function startOfDay(d) {
+          var x = new Date(d);
+          x.setHours(0, 0, 0, 0);
+          return x;
+        }
+
+        function addDays(d, n) {
+          var x = new Date(d);
+          x.setDate(x.getDate() + n);
+          return x;
+        }
+
+        function parseISO(s) {
+          return new Date(s);
+        }
+
+        function fmtTime(d) {
+          return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+        }
+
+        function fmtShortDate(d) {
+          return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+        }
+
+        function getVisibleDays() {
+          var a = startOfDay(state.anchor);
+          if (state.view === "day") return [a];
+          if (state.view === "3d") return [a, addDays(a, 1), addDays(a, 2)];
+          var dow = a.getDay();
+          var mon = addDays(a, -dow);
+          var days = [];
+          for (var i = 0; i < 7; i++) days.push(addDays(mon, i));
+          return days;
+        }
+
+        function navStep() {
+          if (state.view === "day") return 1;
+          if (state.view === "3d") return 3;
+          return 7;
+        }
+
+        function eventTop(start) {
+          var h = start.getHours() + start.getMinutes() / 60;
+          if (h < H0) h = H0;
+          if (h > H1) h = H1;
+          return ((h - H0) / (H1 - H0)) * (H1 - H0) * SLOT;
+        }
+
+        function eventHeight(start, end) {
+          var sh = start.getHours() + start.getMinutes() / 60;
+          var eh = end.getHours() + end.getMinutes() / 60;
+          if (eh <= sh) eh = sh + 0.5;
+          var top = Math.max(H0, Math.min(H1, sh));
+          var bot = Math.max(H0, Math.min(H1, eh));
+          return Math.max(1.1, (bot - top) * SLOT);
+        }
+
+        function inDay(d, dayStart) {
+          var t = d.getTime();
+          var s = dayStart.getTime();
+          var e = addDays(dayStart, 1).getTime();
+          return t >= s && t < e;
+        }
+
+        function filterEvents(ev) {
+          if (!state.filters || state.filters.length === 0) return true;
+          return state.filters.indexOf(ev.type) !== -1;
+        }
+
+        function eventsForCalendarToday() {
+          var DEMO = buildDemo();
+          var today0 = startOfDay(new Date());
+          var list = DEMO.filter(function (ev) {
+            if (!filterEvents(ev)) return false;
+            return inDay(parseISO(ev.start), today0);
+          });
+          list.sort(function (a, b) {
+            return parseISO(a.start) - parseISO(b.start);
+          });
+          return list;
+        }
+
+        function renderAiSummary() {
+          var panel = document.getElementById("aiSummaryPanel");
+          var body = document.getElementById("aiSummaryBody");
+          if (!state.showAiSummary || !panel || !body) return;
+
+          var list = eventsForCalendarToday();
+          var now = new Date();
+          var upcoming = null;
+          for (var n = 0; n < list.length; n++) {
+            if (parseISO(list[n].start) >= now) {
+              upcoming = list[n];
+              break;
+            }
+          }
+
+          var lead = "";
+          if (list.length === 0) {
+            lead =
+              '<p class="ai-summary-empty">No demo items line up with <strong>today</strong> on the calendar—click <strong>Today</strong> in the toolbar so the sample schedule matches the current date, or check back when your real feed is connected.</p>';
+            body.innerHTML = lead;
+            return;
+          }
+
+          lead =
+            '<p class="lead"><strong>Example AI line:</strong> You have <strong>' +
+            list.length +
+            "</strong> block" +
+            (list.length === 1 ? "" : "s") +
+            " on your UAP calendar today.";
+          if (upcoming) {
+            lead +=
+              " Next up: <strong>" +
+              escapeHtml(upcoming.title) +
+              "</strong> at " +
+              fmtTime(parseISO(upcoming.start)) +
+              ".";
+          } else {
+            lead += " In this demo, those times may already have passed—below is still the order for the day.";
+          }
+          lead += "</p>";
+
+          var html = lead + '<ul class="ai-summary-timeline">';
+          for (var i = 0; i < list.length; i++) {
+            var ev = list[i];
+            var s = parseISO(ev.start);
+            var e = parseISO(ev.end);
+            html += "<li>";
+            html += '<span class="when">' + fmtTime(s) + " – " + fmtTime(e) + "</span>";
+            html += '<span class="what">' + escapeHtml(ev.title) + "</span>";
+            html += '<span class="kind">' + TYPE_LABELS[ev.type] + "</span>";
+            html += "</li>";
+          }
+          html += "</ul>";
+          html +=
+            '<p class="ai-summary-foot">Demo only—copy is static and would be generated from your real schedule in a live system.</p>';
+          body.innerHTML = html;
+        }
+
+        function syncAiSummaryPanel() {
+          var panel = document.getElementById("aiSummaryPanel");
+          var btn = document.getElementById("btnAiSummary");
+          if (!panel || !btn) return;
+          if (state.showAiSummary) {
+            panel.hidden = false;
+            btn.setAttribute("aria-pressed", "true");
+            btn.setAttribute("aria-expanded", "true");
+            renderAiSummary();
+          } else {
+            panel.hidden = true;
+            btn.setAttribute("aria-pressed", "false");
+            btn.setAttribute("aria-expanded", "false");
+          }
+        }
+
+        function renderCalendar() {
+          var DEMO = buildDemo();
+          var root = document.getElementById("calRoot");
+          var days = getVisibleDays();
+          var today = startOfDay(new Date());
+          document.documentElement.style.setProperty("--cols", String(days.length));
+
+          var label = document.getElementById("rangeLabel");
+          if (days.length === 1) {
+            label.textContent = days[0].toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            });
+          } else {
+            label.textContent =
+              fmtShortDate(days[0]) + " — " + fmtShortDate(days[days.length - 1]) + ", " + days[0].getFullYear();
+          }
+
+          var rows = H1 - H0;
+          var html = '<div class="cal-wrap" role="grid" aria-label="Schedule">';
+          html += '<div class="cal-header-row" role="row">';
+          html += '<div class="cal-head-cell corner" role="columnheader"></div>';
+          for (var c = 0; c < days.length; c++) {
+            var dd = days[c];
+            var isToday = dd.getTime() === today.getTime();
+            html +=
+              '<div class="cal-head-cell' +
+              (isToday ? " is-today" : "") +
+              '" role="columnheader">' +
+              '<span>' +
+              dd.toLocaleDateString(undefined, { weekday: "short" }) +
+              "</span>" +
+              "<strong>" +
+              dd.getDate() +
+              "</strong>" +
+              "</div>";
+          }
+          html += "</div>";
+
+          html += '<div class="cal-body-row" role="row">';
+          html += '<div class="time-col" aria-hidden="true">';
+          for (var h = H0; h < H1; h++) {
+            html +=
+              '<div class="time-slot">' +
+              (h === 12 ? "12 PM" : h > 12 ? h - 12 + " PM" : h + " AM") +
+              "</div>";
+          }
+          html += "</div>";
+
+          for (var col = 0; col < days.length; col++) {
+            var day = days[col];
+            html += '<div class="day-col" role="gridcell" data-day="' + col + '">';
+            for (var r = 0; r < rows; r++) {
+              html += '<div class="hour-line" aria-hidden="true"></div>';
+            }
+            for (var j = 0; j < DEMO.length; j++) {
+              var ev = DEMO[j];
+              if (!filterEvents(ev)) continue;
+              var s = parseISO(ev.start);
+              var e = parseISO(ev.end);
+              if (!inDay(s, day)) continue;
+              var top = eventTop(s);
+              var ht = eventHeight(s, e);
+              var cls = "event-block type-" + ev.type.replace(/[^a-z_]/g, "_");
+              html +=
+                '<div class="' +
+                cls +
+                '" style="top:' +
+                top +
+                "rem;height:" +
+                ht +
+                'rem" title="' +
+                ev.title.replace(/"/g, "&quot;") +
+                '">';
+              html += '<span class="t">' + escapeHtml(ev.title) + "</span>";
+              html += '<span class="m">' + fmtTime(s) + " – " + fmtTime(e) + "</span>";
+              html += "</div>";
+            }
+            html += "</div>";
+          }
+          html += "</div></div>";
+          root.innerHTML = html;
+        }
+
+        function escapeHtml(s) {
+          return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function renderAgenda() {
+          var DEMO = buildDemo();
+          var days = getVisibleDays();
+          var start = days[0].getTime();
+          var end = addDays(days[days.length - 1], 1).getTime();
+          var list = DEMO.filter(function (ev) {
+            if (!filterEvents(ev)) return false;
+            var t = parseISO(ev.start).getTime();
+            return t >= start && t < end;
+          });
+          list.sort(function (a, b) {
+            return parseISO(a.start) - parseISO(b.start);
+          });
+
+          var ul = document.getElementById("agendaList");
+          if (list.length === 0) {
+            ul.innerHTML =
+              '<li class="empty-cal">Nothing in this range for the selected filters—try another week or clear filters.</li>';
+            return;
+          }
+          var html = "";
+          for (var i = 0; i < list.length; i++) {
+            var ev = list[i];
+            var s = parseISO(ev.start);
+            var badge =
+              '<span class="badge type-' +
+              ev.type.replace(/[^a-z_]/g, "_") +
+              '">' +
+              TYPE_LABELS[ev.type] +
+              "</span>";
+            html += "<li class=\"agenda-item\">";
+            html += "<time datetime=\"" + ev.start + '">' + fmtShortDate(s) + "<br />" + fmtTime(s) + "</time>";
+            html += '<div class="body">';
+            html += "<p class=\"title\">" + badge + escapeHtml(ev.title) + "</p>";
+            html += '<p class="meta">' + escapeHtml(ev.detail) + "</p>";
+            html += "</div></li>";
+          }
+          ul.innerHTML = html;
+        }
+
+        function renderFilters() {
+          var types = Object.keys(TYPE_LABELS);
+          var row = document.getElementById("filterRow");
+          var html =
+            '<button type="button" class="chip" id="chipAll" aria-pressed="true">All types</button>';
+          for (var i = 0; i < types.length; i++) {
+            var t = types[i];
+            html +=
+              '<button type="button" class="chip" data-type="' +
+              t +
+              '" aria-pressed="false">' +
+              TYPE_LABELS[t] +
+              "</button>";
+          }
+          row.innerHTML = html;
+
+          row.querySelector("#chipAll").addEventListener("click", function () {
+            state.filters = null;
+            syncChips();
+            renderCalendar();
+            renderAgenda();
+            renderAiSummary();
+          });
+          row.querySelectorAll(".chip[data-type]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              var t = btn.getAttribute("data-type");
+              if (!state.filters) state.filters = [];
+              var ix = state.filters.indexOf(t);
+              if (ix === -1) state.filters.push(t);
+              else state.filters.splice(ix, 1);
+              if (state.filters.length === 0) state.filters = null;
+              syncChips();
+              renderCalendar();
+              renderAgenda();
+              renderAiSummary();
+            });
+          });
+        }
+
+        function syncChips() {
+          var row = document.getElementById("filterRow");
+          var all = row.querySelector("#chipAll");
+          if (all) all.setAttribute("aria-pressed", state.filters ? "false" : "true");
+          row.querySelectorAll(".chip[data-type]").forEach(function (btn) {
+            var t = btn.getAttribute("data-type");
+            var on = state.filters && state.filters.indexOf(t) !== -1;
+            btn.setAttribute("aria-pressed", on ? "true" : "false");
+          });
+        }
+
+        function setViewSeg() {
+          document.getElementById("viewDay").setAttribute("aria-pressed", state.view === "day" ? "true" : "false");
+          document.getElementById("view3").setAttribute("aria-pressed", state.view === "3d" ? "true" : "false");
+          document.getElementById("viewWeek").setAttribute("aria-pressed", state.view === "week" ? "true" : "false");
+        }
+
+        document.getElementById("viewDay").addEventListener("click", function () {
+          state.view = "day";
+          setViewSeg();
+          renderCalendar();
+          renderAgenda();
+          renderAiSummary();
+        });
+        document.getElementById("view3").addEventListener("click", function () {
+          state.view = "3d";
+          setViewSeg();
+          renderCalendar();
+          renderAgenda();
+          renderAiSummary();
+        });
+        document.getElementById("viewWeek").addEventListener("click", function () {
+          state.view = "week";
+          state.anchor = startOfDay(state.anchor);
+          setViewSeg();
+          renderCalendar();
+          renderAgenda();
+          renderAiSummary();
+        });
+
+        document.getElementById("navPrev").addEventListener("click", function () {
+          state.anchor = addDays(state.anchor, -navStep());
+          renderCalendar();
+          renderAgenda();
+          renderAiSummary();
+        });
+        document.getElementById("navNext").addEventListener("click", function () {
+          state.anchor = addDays(state.anchor, navStep());
+          renderCalendar();
+          renderAgenda();
+          renderAiSummary();
+        });
+        document.getElementById("btnToday").addEventListener("click", function () {
+          state.anchor = startOfDay(new Date());
+          renderCalendar();
+          renderAgenda();
+          renderAiSummary();
+        });
+
+        document.getElementById("btnAiSummary").addEventListener("click", function () {
+          state.showAiSummary = !state.showAiSummary;
+          syncAiSummaryPanel();
+        });
+
+        renderFilters();
+        setViewSeg();
+        state.anchor = startOfDay(new Date());
+        renderCalendar();
+        renderAgenda();
+        syncAiSummaryPanel();
+      })();
+    </script>
+  </body>
+</html>
