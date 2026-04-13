@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Verifiable eCertificates · UAP Future Demo</title>
+    <title>QR-based eCertificates · UAP Future Demo</title>
     <style>
       :root {
         --text: #0c1222;
@@ -346,40 +346,258 @@
         font-weight: 500;
       }
 
+      .cert-layout {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1.15rem;
+        align-items: start;
+      }
+
+      @media (max-width: 520px) {
+        .cert-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .qr-panel {
+        text-align: center;
+        padding: 0.65rem 0.65rem 0.75rem;
+        border-radius: 0.75rem;
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+      }
+
+      .qr-panel .qr-label {
+        margin: 0 0 0.45rem;
+        font-size: 0.62rem;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .qr-svg {
+        display: block;
+        width: 5.5rem;
+        height: 5.5rem;
+        margin: 0 auto;
+        border-radius: 0.35rem;
+      }
+
+      .qr-url {
+        margin: 0.5rem 0 0;
+        font-size: 0.62rem;
+        font-family: ui-monospace, "Cascadia Code", monospace;
+        color: var(--accent);
+        word-break: break-all;
+        line-height: 1.35;
+      }
+
       .qr-placeholder {
         margin-top: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
         padding: 0.65rem 0.75rem;
         border-radius: 0.65rem;
         background: rgba(15, 23, 42, 0.04);
         font-size: 0.75rem;
         color: var(--text-soft);
+        line-height: 1.45;
       }
 
-      .qr-box {
-        width: 3.5rem;
-        height: 3.5rem;
+      .monetize {
+        margin-top: 1.25rem;
+        padding: 1.05rem 1.25rem 1.15rem;
+      }
+
+      .monetize h2 {
+        margin: 0 0 0.65rem;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .monetize ul {
+        margin: 0;
+        padding-left: 1.15rem;
+        font-size: 0.84rem;
+        color: var(--text);
+        line-height: 1.55;
+      }
+
+      .monetize li {
+        margin-bottom: 0.4rem;
+      }
+
+      .monetize li:last-child {
+        margin-bottom: 0;
+      }
+
+      .monetize strong {
+        font-weight: 650;
+        color: var(--text);
+      }
+
+      .cert-main {
+        min-width: 0;
+      }
+
+      .example-block {
+        margin-bottom: 1.25rem;
+        padding: 1.15rem 1.25rem 1.25rem;
+      }
+
+      .example-block .example-heading {
+        margin: 0 0 0.35rem;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .example-block .example-sub {
+        margin: 0 0 1rem;
+        font-size: 0.86rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+        max-width: 36rem;
+      }
+
+      .example-cert {
+        border-radius: 1rem;
+        background: linear-gradient(165deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        box-shadow: 0 8px 32px rgba(59, 91, 142, 0.08);
+        overflow: hidden;
+      }
+
+      .example-cert-inner {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 1.15rem 1.2rem 1.2rem;
+      }
+
+      @media (max-width: 520px) {
+        .example-cert-inner {
+          grid-template-columns: 1fr;
+          justify-items: center;
+          text-align: center;
+        }
+      }
+
+      .example-cert .ex-issuer {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 0.35rem;
+      }
+
+      .example-cert .ex-title {
+        margin: 0 0 0.4rem;
+        font-size: 1rem;
+        font-weight: 750;
+        letter-spacing: -0.02em;
+        line-height: 1.3;
+      }
+
+      .example-cert .ex-holder {
+        margin: 0;
+        font-size: 0.92rem;
+        color: var(--text-soft);
+      }
+
+      .example-cert .ex-holder strong {
+        color: var(--text);
+      }
+
+      .example-qr-link {
+        display: block;
+        padding: 0.5rem;
+        border-radius: 0.75rem;
+        background: #fff;
+        border: 2px solid rgba(37, 99, 235, 0.35);
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.15);
+        line-height: 0;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .example-qr-link:hover {
+        transform: scale(1.03);
+        box-shadow: 0 6px 22px rgba(37, 99, 235, 0.22);
+      }
+
+      .example-qr-link:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      .example-qr-link .qr-svg {
+        width: 6.25rem;
+        height: 6.25rem;
+      }
+
+      .example-qr-caption {
+        margin: 0.65rem 0 0;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        text-align: center;
+      }
+
+      .example-foot {
+        margin: 0;
+        padding: 0.65rem 1rem;
+        font-size: 0.75rem;
+        color: var(--text-soft);
+        background: rgba(15, 23, 42, 0.04);
+        border-top: 1px solid rgba(15, 23, 42, 0.06);
+      }
+
+      .example-foot code {
+        font-size: 0.85em;
+        padding: 0.1rem 0.35rem;
         border-radius: 0.35rem;
-        background: repeating-linear-gradient(
-            90deg,
-            #0f172a 0px,
-            #0f172a 3px,
-            transparent 3px,
-            transparent 6px
-          ),
-          repeating-linear-gradient(
-            0deg,
-            #0f172a 0px,
-            #0f172a 3px,
-            transparent 3px,
-            transparent 6px
-          );
-        background-size: 6px 6px;
-        background-color: #fff;
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--accent);
+      }
+
+      .scan-checking {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 0.75rem;
+        background: rgba(37, 99, 235, 0.1);
+        border: 1px solid rgba(37, 99, 235, 0.22);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--accent);
+      }
+
+      .scan-checking[hidden] {
+        display: none !important;
+      }
+
+      .scan-spinner {
         flex-shrink: 0;
-        opacity: 0.85;
+        width: 1.35rem;
+        height: 1.35rem;
+        border: 3px solid rgba(37, 99, 235, 0.25);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: scan-spin 0.65s linear infinite;
+      }
+
+      @keyframes scan-spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       @media (max-width: 640px) {
@@ -395,38 +613,129 @@
       <div class="page">
         <header class="top glass">
           <div>
-            <h1>Verifiable eCertificates</h1>
+            <h1>QR-based eCertificates</h1>
             <p class="sub">
-              Enter a certificate ID to confirm it was issued by UAP. Results are signed and tamper-evident in this demo.
+              Each printed or digital credential carries a QR that encodes a verification link. Paste that link or the
+              certificate ID below—same checks as scanning. Demo registry only.
             </p>
           </div>
           <a class="back" href="index.html">← Home</a>
         </header>
 
+        <section class="example-block glass" aria-label="Example certificate">
+          <h2 class="example-heading">Example certificate</h2>
+          <p class="example-sub">
+            The QR encodes a link to this page with a certificate ID. Scan it (or tap) to see a quick registry check,
+            then the verified details below—same flow as a real phone camera opening the URL.
+          </p>
+          <div class="example-cert">
+            <div class="example-cert-inner">
+              <div>
+                <div class="ex-issuer">University of Asia Pacific</div>
+                <h3 class="ex-title">Certificate of Completion — Advanced Web Systems</h3>
+                <p class="ex-holder">Presented to <strong>Ayesha Khan</strong></p>
+              </div>
+              <div>
+                <a
+                  class="example-qr-link"
+                  id="example-qr-link"
+                  href="ecertificates.html?verify=UAP-2025QR-7N9P"
+                  aria-label="Scan or tap: verify certificate UAP-2025QR-7N9P"
+                >
+                  <svg class="qr-svg" viewBox="0 0 29 29" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect fill="#ffffff" width="29" height="29" />
+                    <g fill="#0f172a">
+                      <rect x="0" y="0" width="7" height="7" />
+                      <rect x="2" y="2" width="3" height="3" fill="#ffffff" />
+                      <rect x="3" y="3" width="1" height="1" />
+                      <rect x="22" y="0" width="7" height="7" />
+                      <rect x="24" y="2" width="3" height="3" fill="#ffffff" />
+                      <rect x="25" y="3" width="1" height="1" />
+                      <rect x="0" y="22" width="7" height="7" />
+                      <rect x="2" y="24" width="3" height="3" fill="#ffffff" />
+                      <rect x="3" y="25" width="1" height="1" />
+                      <rect x="22" y="22" width="7" height="7" />
+                      <rect x="24" y="24" width="3" height="3" fill="#ffffff" />
+                      <rect x="25" y="25" width="1" height="1" />
+                      <rect x="10" y="4" width="1" height="1" />
+                      <rect x="12" y="4" width="1" height="1" />
+                      <rect x="14" y="4" width="1" height="1" />
+                      <rect x="16" y="4" width="1" height="1" />
+                      <rect x="9" y="6" width="2" height="2" />
+                      <rect x="13" y="6" width="3" height="3" />
+                      <rect x="18" y="6" width="2" height="2" />
+                      <rect x="10" y="10" width="9" height="1" />
+                      <rect x="10" y="12" width="1" height="5" />
+                      <rect x="14" y="12" width="5" height="5" />
+                      <rect x="10" y="18" width="9" height="1" />
+                      <rect x="4" y="10" width="3" height="3" />
+                      <rect x="4" y="15" width="3" height="2" />
+                    </g>
+                  </svg>
+                </a>
+                <p class="example-qr-caption">Scan or tap QR → check → verified</p>
+              </div>
+            </div>
+            <p class="example-foot">
+              Opens <code>ecertificates.html?verify=UAP-2025QR-7N9P</code> — works from another device if this site is
+              hosted (same folder path as this file).
+            </p>
+          </div>
+        </section>
+
         <div class="verify-panel glass">
-          <label for="cert-id">Certificate ID</label>
+          <label for="cert-id">Verification URL or certificate ID</label>
           <div class="input-row">
             <input
               id="cert-id"
               type="text"
               autocomplete="off"
-              placeholder="e.g. UAP-2025-CERT-8K2M4X"
+              placeholder="Paste QR link or ID, e.g. UAP-2025QR-7N9P"
               spellcheck="false"
             />
             <button type="button" class="btn" id="verify-btn">Verify</button>
           </div>
           <p class="hint">
-            Try <code>UAP-2025-CERT-8K2M4X</code> (valid) or <code>UAP-2024-CERT-REVOKED</code> (revoked).
+            Try ID <code>UAP-2025QR-7N9P</code> (valid) or <code>UAP-2024QR-REVOKED</code> (revoked)—or paste
+            <code>https://uap.edu.bd/verify/c/UAP-2025QR-7N9P</code> as if you scanned the QR. Use the
+            <strong>example certificate</strong> above to simulate a scan.
           </p>
+
+          <div class="scan-checking" id="scan-checking" hidden role="status">
+            <div class="scan-spinner" aria-hidden="true"></div>
+            <span>Checking credential against registry…</span>
+          </div>
 
           <div class="result" id="result" aria-live="polite"></div>
         </div>
+
+        <section class="monetize glass" aria-label="Revenue ideas">
+          <h2>Ways this can earn revenue (ideas)</h2>
+          <ul>
+            <li>
+              <strong>Employer &amp; partner API:</strong> charge for bulk verification, webhooks, or SLA-backed lookups
+              when HR systems check alumni credentials at scale.
+            </li>
+            <li>
+              <strong>Issuance fees:</strong> per-seat pricing for workshops, micro-credentials, and conferences—QR PDFs
+              included in the ticket.
+            </li>
+            <li>
+              <strong>Premium formats:</strong> branded printable PDFs, wallet passes, or reprints with a new QR after a
+              name change—small fee each time.
+            </li>
+            <li>
+              <strong>White-label verify portal:</strong> partner institutions pay a subscription to use your registry UI
+              and QR resolution under their domain.
+            </li>
+          </ul>
+        </section>
       </div>
     </div>
 
     <script>
       const registry = {
-        "UAP-2025-CERT-8K2M4X": {
+        "UAP-2025QR-7N9P": {
           status: "valid",
           credential: "Certificate of Completion — Advanced Web Systems",
           holder: "Ayesha Khan",
@@ -435,8 +744,9 @@
           expires: "2030-03-15",
           issuer: "University of Asia Pacific",
           fingerprint: "sha256:a7f3…9c2e (demo)",
+          verifyUrl: "https://uap.edu.bd/verify/c/UAP-2025QR-7N9P",
         },
-        "UAP-2024-CERT-REVOKED": {
+        "UAP-2024QR-REVOKED": {
           status: "revoked",
           reason: "Issuer revocation — credential superseded.",
           credential: "Workshop Attendance — Data Ethics",
@@ -445,30 +755,71 @@
         },
       };
 
-      function normalizeId(s) {
+      function qrSvgDemo() {
+        return `<svg class="qr-svg" viewBox="0 0 29 29" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect fill="#ffffff" width="29" height="29"/>
+          <g fill="#0f172a">
+            <rect x="0" y="0" width="7" height="7"/><rect x="2" y="2" width="3" height="3" fill="#ffffff"/><rect x="3" y="3" width="1" height="1"/>
+            <rect x="22" y="0" width="7" height="7"/><rect x="24" y="2" width="3" height="3" fill="#ffffff"/><rect x="25" y="3" width="1" height="1"/>
+            <rect x="0" y="22" width="7" height="7"/><rect x="2" y="24" width="3" height="3" fill="#ffffff"/><rect x="3" y="25" width="1" height="1"/>
+            <rect x="22" y="22" width="7" height="7"/><rect x="24" y="24" width="3" height="3" fill="#ffffff"/><rect x="25" y="25" width="1" height="1"/>
+            <rect x="10" y="4" width="1" height="1"/><rect x="12" y="4" width="1" height="1"/><rect x="14" y="4" width="1" height="1"/><rect x="16" y="4" width="1" height="1"/>
+            <rect x="9" y="6" width="2" height="2"/><rect x="13" y="6" width="3" height="3"/><rect x="18" y="6" width="2" height="2"/>
+            <rect x="10" y="10" width="9" height="1"/><rect x="10" y="12" width="1" height="5"/><rect x="14" y="12" width="5" height="5"/>
+            <rect x="10" y="18" width="9" height="1"/><rect x="4" y="10" width="3" height="3"/><rect x="4" y="15" width="3" height="2"/>
+          </g>
+        </svg>`;
+      }
+
+      function extractCertId(raw) {
+        let s = raw.trim();
+        if (!s) return "";
+        try {
+          if (s.includes("://")) {
+            const u = new URL(s);
+            const parts = u.pathname.split("/").filter(Boolean);
+            s = parts[parts.length - 1] || s;
+          } else if (s.includes("/")) {
+            const parts = s.split("/").filter(Boolean);
+            s = parts[parts.length - 1];
+          }
+        } catch (e) {
+          /* keep s */
+        }
         return s.trim().toUpperCase();
       }
 
       function renderValid(c) {
+        const qr = qrSvgDemo();
+        const vUrl = c.verifyUrl || "";
         return `
-          <div class="status-banner valid" role="status">✓ Verified — issued by UAP registry</div>
+          <div class="status-banner valid" role="status">✓ Verified — QR link matches UAP registry</div>
           <div class="cert-card">
-            <div class="cert-seal" aria-hidden="true">🎖️</div>
-            <div class="cert-issuer">${escapeHtml(c.issuer)}</div>
-            <h2 class="cert-title">${escapeHtml(c.credential)}</h2>
-            <p class="cert-holder">Presented to <strong>${escapeHtml(c.holder)}</strong></p>
-            <dl class="cert-meta">
-              <div><dt>Student ID</dt><dd>${escapeHtml(c.studentId)}</dd></div>
-              <div><dt>Issued</dt><dd>${escapeHtml(c.issued)}</dd></div>
-              <div><dt>Valid until</dt><dd>${escapeHtml(c.expires)}</dd></div>
-            </dl>
-            <div class="fingerprint">
-              Public fingerprint
-              <span>${escapeHtml(c.fingerprint)}</span>
+            <div class="cert-layout">
+              <div class="cert-main">
+                <div class="cert-seal" aria-hidden="true">🎖️</div>
+                <div class="cert-issuer">${escapeHtml(c.issuer)}</div>
+                <h2 class="cert-title">${escapeHtml(c.credential)}</h2>
+                <p class="cert-holder">Presented to <strong>${escapeHtml(c.holder)}</strong></p>
+                <dl class="cert-meta">
+                  <div><dt>Student ID</dt><dd>${escapeHtml(c.studentId)}</dd></div>
+                  <div><dt>Issued</dt><dd>${escapeHtml(c.issued)}</dd></div>
+                  <div><dt>Valid until</dt><dd>${escapeHtml(c.expires)}</dd></div>
+                </dl>
+                <div class="fingerprint">
+                  Public fingerprint
+                  <span>${escapeHtml(c.fingerprint)}</span>
+                </div>
+              </div>
+              <div class="qr-panel">
+                <p class="qr-label">QR on credential</p>
+                ${qr}
+                <p class="qr-url">${escapeHtml(vUrl)}</p>
+              </div>
             </div>
             <div class="qr-placeholder">
-              <div class="qr-box" aria-hidden="true"></div>
-              <div>Scanning this QR on a printed credential would open the same verification page with this ID pre-filled.</div>
+              The QR encodes this verification URL. Scanning it opens this page with the ID resolved—same outcome as
+              pasting the link above.
             </div>
           </div>`;
       }
@@ -504,7 +855,7 @@
       function verify() {
         const input = document.getElementById("cert-id");
         const result = document.getElementById("result");
-        const id = normalizeId(input.value);
+        const id = extractCertId(input.value);
 
         if (!id) {
           result.className = "result visible";
@@ -527,9 +878,57 @@
         }
       }
 
-      document.getElementById("verify-btn").addEventListener("click", verify);
-      document.getElementById("cert-id").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") verify();
+      const DEMO_VERIFY_ID = "UAP-2025QR-7N9P";
+
+      function setExampleQrHref() {
+        const a = document.getElementById("example-qr-link");
+        if (!a) return;
+        var u = new URL(window.location.href);
+        u.search = "";
+        u.searchParams.set("verify", DEMO_VERIFY_ID);
+        a.href = u.toString();
+      }
+
+      function runScanFlow(rawId) {
+        var id = extractCertId(rawId);
+        if (!id) return;
+        var checking = document.getElementById("scan-checking");
+        var resultEl = document.getElementById("result");
+        checking.hidden = false;
+        resultEl.className = "result";
+        resultEl.innerHTML = "";
+
+        setTimeout(function () {
+          checking.hidden = true;
+          document.getElementById("cert-id").value = id;
+          verify();
+          resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          if (window.location.search.indexOf("verify=") !== -1) {
+            history.replaceState({}, "", window.location.pathname + window.location.hash);
+          }
+        }, 950);
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        setExampleQrHref();
+
+        var q = new URLSearchParams(window.location.search).get("verify");
+        if (q) {
+          runScanFlow(q);
+        }
+
+        var link = document.getElementById("example-qr-link");
+        if (link) {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            runScanFlow(DEMO_VERIFY_ID);
+          });
+        }
+
+        document.getElementById("verify-btn").addEventListener("click", verify);
+        document.getElementById("cert-id").addEventListener("keydown", function (e) {
+          if (e.key === "Enter") verify();
+        });
       });
     </script>
   </body>

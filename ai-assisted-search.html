@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-Assisted Search · UAP Future Demo</title>
+    <style>
+      :root {
+        --text: #0c1222;
+        --text-soft: #3d4a63;
+        --glass-bg: rgba(255, 255, 255, 0.52);
+        --glass-stroke: rgba(255, 255, 255, 0.65);
+        --shadow: 0 8px 32px rgba(59, 91, 142, 0.12);
+        --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        --accent: #2563eb;
+        --accent-soft: rgba(37, 99, 235, 0.12);
+        --ai-tint: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.12));
+        --grid-cell: 40px;
+        --grid-major: calc(var(--grid-cell) * 5);
+        --grid-line: rgba(15, 23, 42, 0.055);
+        --grid-line-strong: rgba(37, 99, 235, 0.11);
+        --cat-notices: #2563eb;
+        --cat-workshops: #7c3aed;
+        --cat-faculty: #4f46e5;
+        --cat-courses: #059669;
+        --cat-forms: #d97706;
+        --cat-events: #db2777;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: clamp(1.25rem, 3vw, 2rem);
+        isolation: isolate;
+      }
+
+      .scene::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: linear-gradient(165deg, #e8f4ff 0%, #f0f7ff 22%, #f5f0ff 55%, #fff5f0 100%);
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+          linear-gradient(to right, var(--grid-line-strong) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--grid-line-strong) 1px, transparent 1px);
+        background-size: var(--grid-cell) var(--grid-cell), var(--grid-cell) var(--grid-cell),
+          var(--grid-major) var(--grid-major), var(--grid-major) var(--grid-major);
+        mask-image: radial-gradient(ellipse 85% 75% at 50% 38%, #000 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+        -webkit-mask-image: radial-gradient(
+          ellipse 85% 75% at 50% 38%,
+          #000 0%,
+          rgba(0, 0, 0, 0.55) 55%,
+          transparent 100%
+        );
+      }
+
+      .scene::after {
+        content: "";
+        position: fixed;
+        inset: -20% -10% auto -10%;
+        height: 70vh;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(147, 197, 253, 0.55) 0%, transparent 55%),
+          radial-gradient(ellipse 70% 50% at 85% 15%, rgba(196, 181, 253, 0.45) 0%, transparent 50%),
+          radial-gradient(ellipse 60% 45% at 50% 90%, rgba(253, 186, 116, 0.35) 0%, transparent 55%);
+      }
+
+      .page {
+        max-width: 58rem;
+        margin: 0 auto;
+      }
+
+      .glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow), var(--shadow-inset);
+      }
+
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.35rem;
+        padding: 1.1rem 1.35rem;
+      }
+
+      .top h1 {
+        margin: 0 0 0.35rem;
+        font-size: clamp(1.2rem, 2.8vw, 1.55rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .top .sub {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-soft);
+        max-width: 32rem;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.9rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        border-radius: 0.65rem;
+        background: var(--accent-soft);
+        border: 1px solid rgba(37, 99, 235, 0.22);
+      }
+
+      .back:hover {
+        background: rgba(37, 99, 235, 0.18);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+        gap: 1.15rem;
+        align-items: start;
+      }
+
+      @media (max-width: 800px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .sidebar {
+        padding: 1rem 0.85rem;
+      }
+
+      .sidebar h2 {
+        margin: 0 0 0.65rem;
+        font-size: 0.68rem;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .ai-block {
+        margin-bottom: 1.15rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+      }
+
+      .ai-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .ai-label {
+        font-size: 0.88rem;
+        font-weight: 650;
+      }
+
+      .switch {
+        position: relative;
+        width: 2.85rem;
+        height: 1.55rem;
+        border-radius: 999px;
+        border: none;
+        background: rgba(15, 23, 42, 0.12);
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.2s ease;
+      }
+
+      .switch[aria-checked="true"] {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      }
+
+      .switch--dive[aria-checked="true"] {
+        background: linear-gradient(135deg, #0d9488, #2563eb);
+      }
+
+      .switch::after {
+        content: "";
+        position: absolute;
+        top: 0.2rem;
+        left: 0.22rem;
+        width: 1.15rem;
+        height: 1.15rem;
+        border-radius: 999px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease;
+      }
+
+      .switch[aria-checked="true"]::after {
+        transform: translateX(1.25rem);
+      }
+
+      .ai-hint {
+        margin: 0.5rem 0 0;
+        font-size: 0.75rem;
+        color: var(--text-soft);
+        line-height: 1.4;
+      }
+
+      .cat-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .cat-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.5rem 0.6rem;
+        border: 1px solid transparent;
+        border-radius: 0.65rem;
+        background: transparent;
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 550;
+        color: var(--text-soft);
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+
+      .cat-btn:hover {
+        background: rgba(255, 255, 255, 0.5);
+        color: var(--text);
+      }
+
+      .cat-btn[aria-current="true"] {
+        background: rgba(37, 99, 235, 0.12);
+        color: var(--accent);
+        border-color: rgba(37, 99, 235, 0.2);
+      }
+
+      .cat-dot {
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 999px;
+        flex-shrink: 0;
+      }
+
+      .main-col {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-width: 0;
+      }
+
+      .search-wrap {
+        padding: 0.65rem 0.85rem 0.65rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .search-wrap svg {
+        flex-shrink: 0;
+        width: 1.2rem;
+        height: 1.2rem;
+        color: var(--text-soft);
+      }
+
+      .search-wrap input {
+        flex: 1;
+        min-width: 0;
+        border: none;
+        outline: none;
+        background: transparent;
+        font: inherit;
+        font-size: 1rem;
+      }
+
+      .search-wrap input::placeholder {
+        color: rgba(61, 74, 99, 0.75);
+      }
+
+      .insight {
+        padding: 1rem 1.15rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(99, 102, 241, 0.28);
+        background: var(--ai-tint);
+      }
+
+      .insight[hidden] {
+        display: none;
+      }
+
+      .insight h3 {
+        margin: 0 0 0.45rem;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #5b21b6;
+      }
+
+      .insight p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text);
+        line-height: 1.55;
+      }
+
+      .insight-deep {
+        margin-top: 0.75rem !important;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(99, 102, 241, 0.22);
+        font-size: 0.86rem !important;
+        color: var(--text-soft) !important;
+      }
+
+      .insight-deep[hidden] {
+        display: none !important;
+      }
+
+      .card-hit--deep {
+        border-color: rgba(13, 148, 136, 0.22);
+        box-shadow: 0 4px 24px rgba(13, 148, 136, 0.08);
+      }
+
+      .deep-meta {
+        margin: 0 0 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #0f766e;
+      }
+
+      .deep-body {
+        margin: 0.65rem 0 0;
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.55rem;
+        background: rgba(13, 148, 136, 0.06);
+        border: 1px solid rgba(13, 148, 136, 0.15);
+        font-size: 0.84rem;
+        line-height: 1.5;
+        color: var(--text);
+      }
+
+      .deep-body strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.68rem;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #0d9488;
+      }
+
+      .meta {
+        margin: 0;
+        font-size: 0.8rem;
+        color: var(--text-soft);
+      }
+
+      .cards {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .card-hit {
+        display: grid;
+        grid-template-columns: 4px 1fr;
+        gap: 0;
+        border-radius: 0.9rem;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.42);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+      }
+
+      .card-hit:hover {
+        box-shadow: 0 8px 28px rgba(59, 91, 142, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .card-hit .stripe {
+        min-height: 100%;
+      }
+
+      .card-hit .body {
+        padding: 0.85rem 1rem 0.95rem;
+      }
+
+      .card-hit .tag {
+        display: inline-block;
+        margin-bottom: 0.35rem;
+        font-size: 0.65rem;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      .card-hit h4 {
+        margin: 0 0 0.35rem;
+        font-size: 1.02rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        line-height: 1.25;
+      }
+
+      .card-hit h4 a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      .card-hit h4 a:hover {
+        text-decoration: underline;
+      }
+
+      .card-hit .path {
+        margin: 0 0 0.4rem;
+        font-size: 0.78rem;
+        color: var(--text-soft);
+        word-break: break-all;
+      }
+
+      .card-hit .snippet {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--text-soft);
+        line-height: 1.45;
+      }
+
+      .empty {
+        padding: 2rem 1rem;
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text-soft);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="page">
+        <header class="top glass">
+          <div>
+            <h1>AI-Assisted Search</h1>
+            <p class="sub">
+              Search campus notices, workshops, people, and files in one place. Enable the overview for an AI-assisted
+              summary, and Deep dive for richer context per hit—cards stay normal campus content; optional blocks are
+              AI-style help. Demo data only.
+            </p>
+          </div>
+          <a class="back" href="index.html">← Home</a>
+        </header>
+
+        <div class="layout">
+          <aside class="sidebar glass" aria-label="Scope">
+            <div class="ai-block">
+              <h2>AI assistance</h2>
+              <div class="ai-row">
+                <span class="ai-label" id="aiLabel">Show overview</span>
+                <button type="button" class="switch" id="aiSwitch" role="switch" aria-checked="false" aria-labelledby="aiLabel"></button>
+              </div>
+              <p class="ai-hint">When on, adds an AI-assisted summary above your results. No external APIs in this demo.</p>
+            </div>
+            <div class="ai-block">
+              <h2>Deep dive</h2>
+              <div class="ai-row">
+                <span class="ai-label" id="diveLabel">Deep dive mode</span>
+                <button
+                  type="button"
+                  class="switch switch--dive"
+                  id="diveSwitch"
+                  role="switch"
+                  aria-checked="false"
+                  aria-labelledby="diveLabel"
+                ></button>
+              </div>
+              <p class="ai-hint">
+                Expands each result with extra metadata, longer excerpts, and related notes—plus a second layer in the
+                overview when AI assistance is on.
+              </p>
+            </div>
+            <div>
+              <h2>Browse</h2>
+              <div class="cat-list" id="catList" role="tablist" aria-label="Content categories"></div>
+            </div>
+          </aside>
+
+          <div class="main-col">
+            <div class="glass search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input type="search" id="q" placeholder="Filter by keyword…" autocomplete="off" aria-label="Filter results" />
+            </div>
+
+            <div class="insight glass" id="insight" hidden>
+              <h3>AI-assisted overview</h3>
+              <p id="insightText"></p>
+              <p class="insight-deep" id="insightDeep" hidden></p>
+            </div>
+
+            <p class="meta" id="meta"></p>
+            <ul class="cards" id="cards"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var CATS = [
+          { id: "all", label: "Everything" },
+          { id: "notices", label: "Notices", color: "var(--cat-notices)" },
+          { id: "workshops", label: "Workshops & seminars", color: "var(--cat-workshops)" },
+          { id: "faculty", label: "Faculty", color: "var(--cat-faculty)" },
+          { id: "courses", label: "Courses", color: "var(--cat-courses)" },
+          { id: "forms", label: "Forms", color: "var(--cat-forms)" },
+          { id: "events", label: "Events", color: "var(--cat-events)" },
+        ];
+
+        var INSIGHTS = {
+          all:
+            "Across categories, the next two weeks are dominated by exam scheduling and fee deadlines. Check Notices first if you sit exams soon.",
+          notices: "Registrar notices cover exam dates and fee windows—read the midterm PDF before rooms are finalized.",
+          workshops: "Workshops fill quickly; hybrid sessions still need advance signup through your department.",
+          faculty: "Use faculty pages for office hours; department directories help when you need a subject expert.",
+          courses: "Course pages list prerequisites and assessment splits—verify before add/drop closes.",
+          forms: "Most registrar forms need an adviser signature—plan ahead of the deadline.",
+          events: "Outdoor events may move indoors; watch for venue updates on the day.",
+        };
+
+        var INSIGHTS_DEEP = {
+          all:
+            "Deep dive: cross-check any date against the official academic calendar PDF; department WhatsApp groups often mirror notices with a day’s delay.",
+          notices:
+            "Deep dive: addenda can supersede earlier PDFs—note the document version in the footer before you rely on room lists.",
+          workshops:
+            "Deep dive: waitlists clear in batch each Friday; if you are waitlisted, confirm with PD before assuming a seat.",
+          faculty:
+            "Deep dive: routing through the department office is faster than email during peak weeks—use the ticket queue on the portal.",
+          courses:
+            "Deep dive: Moodle shells may lag the catalog by a week; syllabus PDF on the course page is the source of truth.",
+          forms:
+            "Deep dive: scanned signatures are accepted only when the portal shows “adviser verified”—otherwise drop off a hard copy.",
+          events:
+            "Deep dive: crowd caps may trigger before the posted end time—arrive early if you need a specific booth.",
+        };
+
+        var ITEMS = [
+          {
+            cat: "notices",
+            label: "Notice",
+            title: "Midterm examination schedule — Spring 2026",
+            path: "Campus / Registrar / PDF",
+            snippet:
+              "Program-wise dates, paper order, and general conduct. Room lists publish 48 hours before the first exam.",
+            deepMeta: "Registrar · PDF · v3 · 4 pages",
+            deepDive:
+              "Seating uses the same block allocation as finals. Clash appeals go through the exam committee on Form E-12 within three working days of the schedule release.",
+          },
+          {
+            cat: "notices",
+            label: "Notice",
+            title: "Fee payment window extended to 15 April",
+            path: "Campus / Registrar",
+            snippet: "Late fees apply after the grace period. Pay via challan or booth as listed.",
+            deepMeta: "Finance · Notice · Updated 2026-03-28",
+            deepDive:
+              "Partial payments post against oldest dues first. Clearance for exams requires zero “hold” status in the student portal as of T−48h.",
+          },
+          {
+            cat: "workshops",
+            label: "Workshop",
+            title: "Research methodology (hybrid)",
+            path: "Academic / PD",
+            snippet: "Two-day block for final-year projects. Limited seats; register through your coordinator.",
+            deepMeta: "PD · Hybrid · Zoom + Lab 3",
+            deepDive:
+              "Materials drop in Moodle 72 hours ahead. Attendance at both days is mandatory for the certificate; recordings are for review only.",
+          },
+          {
+            cat: "workshops",
+            label: "Seminar",
+            title: "Industry talk — AI in embedded systems",
+            path: "CSE / Events",
+            snippet: "Open to Level 3+; recording available for one week if you register.",
+            deepMeta: "CSE · Guest · NDA may apply",
+            deepDive:
+              "Q&A is off the record. Slides without vendor logos may be shared internally; full deck stays in the LMS for two weeks.",
+          },
+          {
+            cat: "faculty",
+            label: "Faculty",
+            title: "Dr. A. Rahman — profile & office hours",
+            path: "CSE / People",
+            snippet: "Office Block B, Room 412. Sun–Thu 2–4 pm or by appointment.",
+            deepMeta: "CSE · Associate · DB & systems",
+            deepDive:
+              "For internship letters, use the department template first. Research collaborations route through the faculty research cell, not personal email.",
+          },
+          {
+            cat: "courses",
+            label: "Course",
+            title: "CSE 3201 — Database systems outline",
+            path: "Catalog / CSE",
+            snippet: "Prerequisites, textbook, labs, and assessment breakdown for this term.",
+            deepMeta: "3 credits · Lab weekly · Moodle",
+            deepDive:
+              "Continuous assessment is 60%; one makeup lab slot per term. Textbook chapter order may differ slightly from lecture—exam follows lecture order.",
+          },
+          {
+            cat: "forms",
+            label: "Form",
+            title: "Course add/drop (PDF)",
+            path: "Registrar / Forms",
+            snippet: "Requires adviser sign-off. Submit within the published window only.",
+            deepMeta: "Registrar · PDF · 2 pages",
+            deepDive:
+              "Late submissions need head’s approval and a written reason; fees for reprint are non-refundable once the window closes.",
+          },
+          {
+            cat: "events",
+            label: "Event",
+            title: "Club fair — central lawn",
+            path: "Student life",
+            snippet: "Clubs and societies; rain location is the multipurpose hall.",
+            deepMeta: "OSA · 10:00–15:00 · Weather watch",
+            deepDive:
+              "Stalls are first-come for power strips. Clubs may scan your ID for mailing lists—opt out at the booth if you prefer.",
+          },
+        ];
+
+        var state = { cat: "all", ai: false, deepDive: false, q: "" };
+
+        var catList = document.getElementById("catList");
+        var aiSwitch = document.getElementById("aiSwitch");
+        var diveSwitch = document.getElementById("diveSwitch");
+        var insight = document.getElementById("insight");
+        var insightText = document.getElementById("insightText");
+        var insightDeep = document.getElementById("insightDeep");
+        var qInput = document.getElementById("q");
+        var meta = document.getElementById("meta");
+        var cards = document.getElementById("cards");
+
+        function catColor(id) {
+          var c = CATS.find(function (x) {
+            return x.id === id;
+          });
+          return c && c.color ? c.color : "var(--accent)";
+        }
+
+        CATS.forEach(function (c) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "cat-btn";
+          b.setAttribute("role", "tab");
+          b.setAttribute("data-cat", c.id);
+          b.setAttribute("aria-selected", c.id === state.cat ? "true" : "false");
+          if (c.id === state.cat) b.setAttribute("aria-current", "true");
+          var dot = document.createElement("span");
+          dot.className = "cat-dot";
+          dot.style.background = c.id === "all" ? "linear-gradient(135deg, #6366f1, #2563eb)" : c.color || "#94a3b8";
+          b.appendChild(dot);
+          b.appendChild(document.createTextNode(c.label));
+          b.addEventListener("click", function () {
+            state.cat = c.id;
+            syncCats();
+            render();
+          });
+          catList.appendChild(b);
+        });
+
+        function syncCats() {
+          catList.querySelectorAll(".cat-btn").forEach(function (b) {
+            var id = b.getAttribute("data-cat");
+            var on = id === state.cat;
+            b.setAttribute("aria-selected", on ? "true" : "false");
+            if (on) b.setAttribute("aria-current", "true");
+            else b.removeAttribute("aria-current");
+          });
+        }
+
+        function matches(item) {
+          if (state.cat !== "all" && item.cat !== state.cat) return false;
+          if (!state.q.trim()) return true;
+          var q = state.q.toLowerCase();
+          var t = (
+            item.title +
+            " " +
+            item.snippet +
+            " " +
+            item.path +
+            " " +
+            (item.deepMeta || "") +
+            " " +
+            (item.deepDive || "")
+          ).toLowerCase();
+          return t.indexOf(q) !== -1;
+        }
+
+        function render() {
+          var list = ITEMS.filter(matches);
+          meta.textContent =
+            list.length === 0
+              ? "No items match."
+              : list.length === 1
+                ? "1 item"
+                : list.length + " items";
+
+          if (state.ai) {
+            insight.hidden = false;
+            insightText.textContent = INSIGHTS[state.cat] || INSIGHTS.all;
+            if (state.deepDive) {
+              insightDeep.hidden = false;
+              insightDeep.textContent = INSIGHTS_DEEP[state.cat] || INSIGHTS_DEEP.all;
+            } else {
+              insightDeep.hidden = true;
+            }
+          } else {
+            insight.hidden = true;
+            insightDeep.hidden = true;
+          }
+
+          aiSwitch.setAttribute("aria-checked", state.ai ? "true" : "false");
+          diveSwitch.setAttribute("aria-checked", state.deepDive ? "true" : "false");
+
+          cards.innerHTML = "";
+          if (list.length === 0) {
+            var empty = document.createElement("li");
+            empty.className = "empty glass";
+            empty.textContent = "Try another category or a different keyword.";
+            cards.appendChild(empty);
+            return;
+          }
+
+          list.forEach(function (item) {
+            var li = document.createElement("li");
+            li.className = "card-hit glass" + (state.deepDive ? " card-hit--deep" : "");
+            var stripe = document.createElement("div");
+            stripe.className = "stripe";
+            stripe.style.background = catColor(item.cat);
+            var body = document.createElement("div");
+            body.className = "body";
+            var deepHtml = "";
+            if (state.deepDive && item.deepMeta && item.deepDive) {
+              deepHtml =
+                '<p class="deep-meta">' +
+                escapeHtml(item.deepMeta) +
+                "</p>" +
+                '<div class="deep-body"><strong>Deep dive</strong> ' +
+                escapeHtml(item.deepDive) +
+                "</div>";
+            }
+            body.innerHTML =
+              '<span class="tag">' +
+              escapeHtml(item.label) +
+              "</span>" +
+              "<h4><a href=\"#\">" +
+              escapeHtml(item.title) +
+              "</a></h4>" +
+              '<p class="path">' +
+              escapeHtml(item.path) +
+              "</p>" +
+              '<p class="snippet">' +
+              escapeHtml(item.snippet) +
+              "</p>" +
+              deepHtml;
+            li.appendChild(stripe);
+            li.appendChild(body);
+            cards.appendChild(li);
+          });
+        }
+
+        function escapeHtml(s) {
+          var d = document.createElement("div");
+          d.textContent = s;
+          return d.innerHTML;
+        }
+
+        aiSwitch.addEventListener("click", function () {
+          state.ai = !state.ai;
+          render();
+        });
+
+        diveSwitch.addEventListener("click", function () {
+          state.deepDive = !state.deepDive;
+          render();
+        });
+
+        qInput.addEventListener("input", function () {
+          state.q = qInput.value;
+          render();
+        });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>
