@@ -13,7 +13,7 @@
         --ui-muted: rgba(248, 250, 252, 0.72);
         --ui-faint: rgba(248, 250, 252, 0.45);
         --hero-overlay: rgba(8, 10, 18, 0.55);
-        /* CSE — cyan */
+        /* CSE — headline matches vivid accent (same family as stat line) */
         --glow-a: #06b6d4;
         --glow-b: #22d3ee;
         --accent: #22d3ee;
@@ -21,7 +21,8 @@
         --cta: #0e7490;
         --cta-hover: #22d3ee;
         --title-a: #67e8f9;
-        --title-b: #a5f3fc;
+        --title-b: #22d3ee;
+        --title-end: #abeef9;
         --card-stop-a: #083344;
         --card-stop-b: #0e7490;
         --card-stop-c: #155e75;
@@ -36,8 +37,9 @@
         --glow-b: #f97316;
         --accent: #fb923c;
         --accent-soft: rgba(251, 146, 60, 0.2);
-        --title-a: #fdba74;
-        --title-b: #fed7aa;
+        --title-a: #fed7aa;
+        --title-b: #fb923c;
+        --title-end: #ffedd5;
         --cta: #ea580c;
         --cta-hover: #c2410c;
         --card-stop-a: #7c2d12;
@@ -50,8 +52,9 @@
         --glow-b: #78716c;
         --accent: #d6d3d1;
         --accent-soft: rgba(214, 211, 209, 0.15);
-        --title-a: #d6d3d1;
-        --title-b: #a8a29e;
+        --title-a: #f5f5f4;
+        --title-b: #d6d3d1;
+        --title-end: #fafaf9;
         --cta: #57534e;
         --cta-hover: #44403c;
         --card-stop-a: #292524;
@@ -66,6 +69,7 @@
         --accent-soft: rgba(52, 211, 153, 0.2);
         --title-a: #6ee7b7;
         --title-b: #34d399;
+        --title-end: #d1fae5;
         --cta: #059669;
         --cta-hover: #047857;
         --card-stop-a: #022c22;
@@ -80,6 +84,7 @@
         --accent-soft: rgba(251, 113, 133, 0.2);
         --title-a: #fecdd3;
         --title-b: #fdba74;
+        --title-end: #fff1f2;
         --cta: #ea580c;
         --cta-hover: #c2410c;
         --card-stop-a: #4c0519;
@@ -102,64 +107,48 @@
         line-height: 1.5;
       }
 
-      .bg-scene {
-        position: fixed;
-        inset: 0;
-        z-index: -2;
-        background: radial-gradient(ellipse 120% 80% at 20% 0%, var(--glow-a) 0%, transparent 55%),
-          radial-gradient(ellipse 100% 70% at 90% 20%, var(--glow-b) 0%, transparent 50%),
-          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(15, 23, 42, 0.9) 0%, var(--ui-bg) 65%);
-      }
-
-      .bg-scene::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-        opacity: 0.35;
-        pointer-events: none;
-      }
-
+      /* Campus photo only — nothing stacks above it except blur (no scrims, tints, or glow layers) */
       .hero-photo {
         position: fixed;
         inset: 0;
-        z-index: -3;
-        background: center / cover no-repeat
-          url("https://images.unsplash.com/photo-1486406146926-c627a92ad4ab?w=1920&q=80");
-        filter: saturate(0.85) brightness(0.35);
-        transition: background-image 1.2s var(--dept-color-ease), filter 1.2s var(--dept-color-ease),
-          opacity 0.5s ease;
+        z-index: -1;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .hero-photo::before {
+        content: "";
+        position: absolute;
+        inset: -12px;
+        background: center 42% / cover no-repeat url("assets/uapbg.jpg");
+        filter: blur(5px) brightness(0.48);
+        transform: scale(1.01);
       }
 
       .hero-photo::after {
         content: "";
         position: absolute;
-        inset: 0;
-        background: linear-gradient(105deg, rgba(8, 10, 18, 0.88) 0%, rgba(8, 10, 18, 0.45) 48%, rgba(8, 10, 18, 0.75) 100%);
-      }
-
-      html[data-dept="cse"] .hero-photo {
-        background-image: url("https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1920&q=80");
-      }
-
-      html[data-dept="eee"] .hero-photo {
-        background-image: url("https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1920&q=80");
-      }
-
-      html[data-dept="civil"] .hero-photo {
-        background-image: url("https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920&q=80");
-      }
-
-      html[data-dept="pharmacy"] .hero-photo {
-        background-image: url("https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=1920&q=80");
-      }
-
-      html[data-dept="arch"] .hero-photo {
-        background-image: url("https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1920&q=80");
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 45%;
+        background: linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent) 35%, rgba(0, 0, 0, 0.6)) 0%,
+          color-mix(in srgb, var(--accent-2) 18%, rgba(0, 0, 0, 0.3)) 40%,
+          transparent 100%
+        );
+        pointer-events: none;
+        transition: background 1s ease;
       }
 
       .shell {
         position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .hero-wrap {
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -170,16 +159,16 @@
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: 0.5rem 1rem;
-        padding: 0.45rem clamp(1rem, 4vw, 2.5rem);
+        gap: 0.4rem 1rem;
+        padding: 0.35rem clamp(1rem, 4vw, 2.5rem);
         font-size: 0.72rem;
         font-weight: 600;
         letter-spacing: 0.02em;
-        color: var(--ui-faint);
-        border-bottom: 1px solid var(--ui-border);
-        background: rgba(0, 0, 0, 0.25);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        color: rgba(248, 250, 252, 0.55);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(16px) saturate(140%);
+        -webkit-backdrop-filter: blur(16px) saturate(140%);
       }
 
       .util a {
@@ -200,12 +189,31 @@
       .util-search {
         display: flex;
         align-items: center;
-        gap: 0.35rem;
-        padding: 0.25rem 0.6rem;
+        gap: 0.55rem;
+        min-height: 2.65rem;
+        padding: 0.45rem 1rem 0.45rem 0.85rem;
         border-radius: 999px;
-        border: 1px solid var(--ui-border);
-        background: var(--ui-surface);
-        color: var(--ui-faint);
+        border: 1px solid color-mix(in srgb, var(--accent) 38%, rgba(255, 255, 255, 0.1));
+        background: color-mix(in srgb, var(--accent) 12%, rgba(6, 10, 20, 0.75));
+        box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 25%, transparent),
+          0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+        color: rgba(248, 250, 252, 0.88);
+        font-size: 0.84rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        transition: border-color 0.85s ease, background 0.85s ease, box-shadow 0.85s ease;
+      }
+
+      .util-search .util-search-icon {
+        display: grid;
+        place-items: center;
+        width: 1.85rem;
+        height: 1.85rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--accent) 28%, rgba(0, 0, 0, 0.35));
+        color: var(--accent);
+        font-size: 0.95rem;
+        line-height: 1;
       }
 
       .header-main {
@@ -213,8 +221,9 @@
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: 1rem;
-        padding: 0.85rem clamp(1rem, 4vw, 2.5rem) 1.25rem;
+        gap: 0.75rem;
+        padding: 0.55rem clamp(1rem, 4vw, 2.5rem) 0.75rem;
+        background: transparent;
       }
 
       .brand {
@@ -261,10 +270,10 @@
         gap: 0.15rem;
         padding: 0.35rem;
         border-radius: 999px;
-        background: var(--ui-surface);
-        border: 1px solid var(--ui-border);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px) saturate(150%);
+        -webkit-backdrop-filter: blur(20px) saturate(150%);
         max-width: min(100%, 42rem);
       }
 
@@ -272,7 +281,7 @@
         padding: 0.4rem 0.75rem;
         font-size: 0.78rem;
         font-weight: 600;
-        color: var(--ui-muted);
+        color: rgba(248, 250, 252, 0.78);
         text-decoration: none;
         border-radius: 999px;
       }
@@ -292,9 +301,9 @@
         width: 2.35rem;
         height: 2.35rem;
         border-radius: 999px;
-        border: 1px solid var(--ui-border);
-        background: var(--ui-surface);
-        color: var(--ui-muted);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(248, 250, 252, 0.75);
         display: grid;
         place-items: center;
         cursor: pointer;
@@ -329,22 +338,26 @@
       }
 
       .dept-switcher {
+        position: sticky;
+        top: 0;
+        z-index: 50;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
-        padding: 0 1rem 1rem;
+        gap: 0.35rem;
+        padding: 0.55rem 0.85rem 0.55rem;
       }
 
       .dept-switcher-label {
-        font-size: 0.68rem;
+        font-size: 0.65rem;
         font-weight: 700;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: var(--ui-faint);
+        color: rgba(248, 250, 252, 0.42);
         width: 100%;
         text-align: center;
+        margin-bottom: 0.1rem;
       }
 
       .dept-pills {
@@ -468,16 +481,32 @@
         margin-top: 0.35rem;
       }
 
-      .hero {
-        flex: 1;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
-        gap: clamp(1.5rem, 4vw, 3rem);
-        align-items: center;
-        padding: 0.5rem clamp(1rem, 4vw, 2.5rem) 2rem;
-        max-width: 72rem;
-        margin: 0 auto;
+      .hero-shell {
+        position: relative;
+        z-index: 0;
+        flex: 1 1 auto;
         width: 100%;
+        max-width: 74rem;
+        margin: 0 auto;
+        padding: 0 clamp(0.75rem, 3vw, 1.75rem) 0.5rem;
+        min-height: 0;
+      }
+
+      /* Glass only on the right column — left copy sits on the photo with no backdrop blur */
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+        gap: clamp(1rem, 3vw, 2rem);
+        align-items: stretch;
+        padding: clamp(0.5rem, 1.5vw, 1rem) clamp(1rem, 3vw, 1.75rem) clamp(0.35rem, 1.5vw, 0.75rem);
+      }
+
+      .hero-media-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        padding: clamp(0.65rem, 1.5vw, 1rem);
+        border-radius: 1.5rem;
       }
 
       @media (max-width: 900px) {
@@ -495,38 +524,72 @@
           width: 100%;
           justify-content: center;
         }
+
+        .hero-copy {
+          height: auto;
+          min-height: 0;
+          justify-content: flex-start;
+        }
+
+        .hero-text-stage {
+          flex: none;
+          min-height: 0;
+        }
+
+        .hero-tag {
+          flex: none;
+        }
+
       }
 
+      /* Block sits vertically centered in the column; copy stays left-aligned */
       .hero-copy {
         max-width: 36rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: stretch;
+        min-height: 100%;
+        height: 100%;
+        text-align: left;
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.65), 0 1px 2px rgba(0, 0, 0, 0.85);
+      }
+
+      .hero-text-stage {
+        flex: 0 1 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        gap: 0.5rem;
+        text-align: left;
       }
 
       .welcome {
-        margin: 0 0 0.35rem;
-        font-size: clamp(0.85rem, 2vw, 0.95rem);
+        margin: 0;
+        font-size: clamp(0.78rem, 1.6vw, 0.88rem);
         font-weight: 700;
-        letter-spacing: 0.28em;
+        letter-spacing: 0.24em;
         text-transform: uppercase;
-        color: var(--ui-faint);
+        color: rgba(255, 255, 255, 0.88);
       }
 
       .hero-title {
-        margin: 0 0 0.75rem;
-        font-size: clamp(2.4rem, 6vw, 3.75rem);
+        margin: 0;
+        width: 100%;
+        font-size: clamp(2rem, 5vw, 3.15rem);
         font-weight: 800;
         letter-spacing: -0.04em;
         line-height: 1.05;
-        background: linear-gradient(120deg, var(--title-a) 0%, var(--title-b) 55%, #fff 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
+        color: var(--accent);
       }
 
       .hero-tag {
-        margin: 0 0 1rem;
-        font-size: clamp(0.95rem, 2.2vw, 1.05rem);
-        color: var(--ui-muted);
+        margin: 0;
         max-width: 32rem;
+        font-size: clamp(0.88rem, 1.9vw, 0.98rem);
+        line-height: 1.5;
+        color: rgba(248, 250, 252, 0.82);
       }
 
       .hero-tag::after {
@@ -535,10 +598,10 @@
       }
 
       .hero-stat {
-        margin: 0 0 1.35rem;
-        font-size: 1.05rem;
+        margin: 0;
+        font-size: 0.98rem;
         font-weight: 700;
-        color: var(--ui-text);
+        color: rgba(255, 255, 255, 0.95);
       }
 
       .hero-stat strong {
@@ -549,46 +612,50 @@
       .btn-explore {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.65rem 1.35rem;
+        align-self: flex-start;
+        gap: 0.45rem;
+        margin: 0;
+        padding: 0.55rem 1.35rem;
         border-radius: 999px;
-        border: none;
-        background: linear-gradient(135deg, var(--cta), var(--cta-hover));
-        color: #fff;
+        border: 2px solid var(--accent);
+        background: color-mix(in srgb, var(--accent) 22%, rgba(6, 10, 20, 0.92));
+        color: var(--accent);
         font: inherit;
-        font-size: 0.9rem;
+        font-size: 0.92rem;
         font-weight: 700;
         cursor: pointer;
-        box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 8px 28px rgba(0, 0, 0, 0.4);
+        transition: var(--transition-theme), transform 0.2s ease, box-shadow 0.25s ease;
       }
 
       .btn-explore:hover {
         transform: translateY(-2px);
-        box-shadow: 0 14px 48px rgba(0, 0, 0, 0.45);
+        background: color-mix(in srgb, var(--accent) 38%, rgba(6, 10, 20, 0.88));
+        border-color: var(--accent);
+        color: var(--ui-text);
+        box-shadow: 0 0 0 1px var(--accent-soft), 0 12px 36px color-mix(in srgb, var(--accent) 28%, rgba(0, 0, 0, 0.5));
       }
 
+      /* No heavy outer glow — keeps edge crisp */
       .feature-card {
         border-radius: 1.35rem;
         overflow: hidden;
-        border: 1px solid var(--ui-border);
-        background: rgba(15, 23, 42, 0.45);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
-        transition: box-shadow 0.65s ease;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(6, 10, 20, 0.72);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        transition: border-color 0.65s ease;
       }
 
       .feature-card-visual {
-        aspect-ratio: 4 / 3;
+        aspect-ratio: 16 / 10;
         background: linear-gradient(135deg, var(--card-stop-a) 0%, var(--card-stop-b) 40%, var(--card-stop-c) 100%);
         position: relative;
         overflow: hidden;
       }
 
       html.is-dept-anim .feature-card {
-        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
-        transition: box-shadow 0.6s ease;
+        border-color: color-mix(in srgb, var(--accent) 45%, rgba(255, 255, 255, 0.12));
+        transition: border-color 0.6s ease;
       }
 
       .feature-card-visual::after {
@@ -955,13 +1022,13 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 0.75rem;
-        padding: 1rem 1.15rem;
+        gap: 0.65rem;
+        padding: 0.65rem 0.95rem;
       }
 
       .feature-card-foot strong {
         display: block;
-        font-size: 0.95rem;
+        font-size: 0.88rem;
         font-weight: 700;
       }
 
@@ -985,7 +1052,7 @@
         display: flex;
         justify-content: center;
         gap: 0.4rem;
-        padding: 0.65rem 0 0;
+        padding: 0.35rem 0 0;
       }
 
       .carousel-dots button {
@@ -1006,87 +1073,81 @@
 
       .bottom-bar {
         margin-top: auto;
-        padding: 1.25rem clamp(1rem, 4vw, 2.5rem) 2rem;
+        flex-shrink: 0;
+        padding: 0.65rem clamp(1rem, 4vw, 2.5rem) 1.1rem;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1.25rem;
-      }
-
-      .socials {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.65rem;
-      }
-
-      .socials a {
-        width: 2rem;
-        height: 2rem;
-        border-radius: 999px;
-        border: 1px solid var(--ui-border);
-        display: grid;
-        place-items: center;
-        color: var(--ui-muted);
-        text-decoration: none;
-        font-size: 0.75rem;
-        font-weight: 700;
-      }
-
-      .socials a:hover {
-        color: var(--ui-text);
-        background: var(--ui-surface);
+        gap: 0.75rem;
       }
 
       .big-search {
         display: flex;
-        align-items: stretch;
-        width: min(100%, 40rem);
+        align-items: center;
+        gap: 0.5rem;
+        width: min(100%, 42rem);
+        min-height: 3.25rem;
+        padding: 0.4rem 0.45rem 0.4rem 1.25rem;
         border-radius: 999px;
-        border: 1px solid var(--ui-border);
-        background: rgba(15, 23, 42, 0.55);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        overflow: hidden;
-        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        background: rgba(32, 33, 36, 0.72);
+        backdrop-filter: blur(24px) saturate(160%);
+        -webkit-backdrop-filter: blur(24px) saturate(160%);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.85s ease;
+      }
+
+      .big-search:focus-within {
+        border-color: color-mix(in srgb, var(--accent) 55%, rgba(255, 255, 255, 0.18));
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4), 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
       }
 
       .big-search input {
         flex: 1;
         border: none;
         background: transparent;
-        padding: 0.85rem 1.15rem;
+        padding: 0.55rem 0;
         font: inherit;
-        font-size: 0.88rem;
+        font-size: 1rem;
         color: var(--ui-text);
         min-width: 0;
+        outline: none;
+      }
+
+      .big-search input:focus {
+        outline: none;
       }
 
       .big-search input::placeholder {
-        color: var(--ui-faint);
+        color: rgba(248, 250, 252, 0.4);
       }
 
-      .big-search button {
-        width: 3.25rem;
+      .big-search-send {
+        flex-shrink: 0;
+        width: 2.35rem;
+        height: 2.35rem;
+        border-radius: 999px;
         border: none;
-        background: var(--cta);
-        color: #fff;
+        background: var(--accent);
+        color: #0a0c12;
         cursor: pointer;
         display: grid;
         place-items: center;
-        font-size: 1.15rem;
-        transition: background 0.85s ease;
+        font-size: 1.05rem;
+        font-weight: 700;
+        transition: background 0.85s ease, transform 0.15s ease;
       }
 
-      .big-search button:hover {
-        background: var(--cta-hover);
+      .big-search-send:hover {
+        transform: scale(1.06);
+        filter: brightness(1.1);
       }
 
       .demo-note {
         max-width: 40rem;
         margin: 0 auto;
-        padding: 0 1rem 1.5rem;
-        font-size: 0.78rem;
+        padding: 0 1rem 0.85rem;
+        font-size: 0.75rem;
         color: var(--ui-faint);
         text-align: center;
         line-height: 1.45;
@@ -1117,7 +1178,296 @@
         color: var(--ui-text);
       }
 
+      /* ═══════════ Below-hero content sections ═══════════ */
+      .content-area {
+        position: relative;
+        z-index: 1;
+        background: #09090b;
+        color: #f0f2f5;
+        overflow: hidden;
+      }
+
+      .content-area::before {
+        content: "";
+        position: absolute;
+        top: -30%;
+        left: 50%;
+        translate: -50% 0;
+        width: min(1100px, 120%);
+        height: 800px;
+        border-radius: 50%;
+        background: radial-gradient(ellipse at center, var(--accent), transparent 65%);
+        opacity: 0.22;
+        filter: blur(90px);
+        pointer-events: none;
+        transition: background 1s ease, opacity 1s ease;
+      }
+
+      .content-area::after {
+        content: "";
+        position: absolute;
+        bottom: -10%;
+        left: 30%;
+        width: min(700px, 80%);
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(ellipse at center, var(--accent), transparent 70%);
+        opacity: 0.1;
+        filter: blur(100px);
+        pointer-events: none;
+        transition: background 1s ease;
+      }
+
+      .content-section {
+        position: relative;
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 3.5rem clamp(1rem, 4vw, 2.5rem) 2rem;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        margin-bottom: 1.75rem;
+      }
+
+      .section-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--accent);
+        transition: color 0.85s ease;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: clamp(1.25rem, 2.8vw, 1.65rem);
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #fafafa;
+      }
+
+      .section-divider {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 40%, rgba(255, 255, 255, 0.1)) 0%, transparent 100%);
+        transition: background 0.85s ease;
+      }
+
+      /* Faculty grid */
+      .faculty-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+        gap: 1rem;
+      }
+
+      .faculty-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.15rem 1.25rem;
+        border-radius: 1rem;
+        border: 1px solid color-mix(in srgb, var(--accent) 22%, rgba(255, 255, 255, 0.07));
+        background: color-mix(in srgb, var(--accent) 6%, rgba(255, 255, 255, 0.03));
+        transition: border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease, background 0.85s ease;
+      }
+
+      .faculty-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-3px);
+        background: color-mix(in srgb, var(--accent) 10%, rgba(255, 255, 255, 0.04));
+        box-shadow: 0 0 32px color-mix(in srgb, var(--accent) 45%, transparent), 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      .faculty-avatar {
+        flex-shrink: 0;
+        width: 3.2rem;
+        height: 3.2rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--accent) 15%, rgba(255, 255, 255, 0.05));
+        border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+        display: grid;
+        place-items: center;
+        font-size: 1.6rem;
+        line-height: 1;
+        transition: background 0.85s ease, border-color 0.85s ease;
+      }
+
+      .faculty-info {
+        min-width: 0;
+      }
+
+      .faculty-name {
+        margin: 0;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.95);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .faculty-role {
+        margin: 0.15rem 0 0;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.55);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Posts grid */
+      .posts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+        gap: 1rem;
+      }
+
+      .post-card {
+        padding: 1.35rem 1.4rem;
+        border-radius: 1rem;
+        border: 1px solid color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.07));
+        background: color-mix(in srgb, var(--accent) 5%, rgba(255, 255, 255, 0.03));
+        transition: border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease, background 0.85s ease;
+      }
+
+      .post-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-3px);
+        background: color-mix(in srgb, var(--accent) 10%, rgba(255, 255, 255, 0.04));
+        box-shadow: 0 0 32px color-mix(in srgb, var(--accent) 45%, transparent), 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      .post-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .post-tag {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.22rem 0.6rem;
+        border-radius: 999px;
+        background: transparent;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        transition: border-color 0.85s ease, color 0.85s ease;
+      }
+
+      .post-date {
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.45);
+      }
+
+      .post-title {
+        margin: 0 0 0.45rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.95);
+        line-height: 1.35;
+      }
+
+      .post-excerpt {
+        margin: 0;
+        font-size: 0.84rem;
+        color: rgba(255, 255, 255, 0.58);
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* Research stats */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+        gap: 1rem;
+      }
+
+      .stat-card {
+        position: relative;
+        padding: 1.4rem 1.35rem;
+        border-radius: 1rem;
+        border: 1px solid color-mix(in srgb, var(--accent) 22%, rgba(255, 255, 255, 0.07));
+        background: color-mix(in srgb, var(--accent) 6%, rgba(255, 255, 255, 0.03));
+        overflow: hidden;
+        transition: border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease, background 0.85s ease;
+      }
+
+      .stat-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-3px);
+        background: color-mix(in srgb, var(--accent) 10%, rgba(255, 255, 255, 0.04));
+        box-shadow: 0 0 32px color-mix(in srgb, var(--accent) 45%, transparent), 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      .stat-card-icon {
+        font-size: 1.85rem;
+        line-height: 1;
+        margin-bottom: 0.65rem;
+      }
+
+      .stat-card-value {
+        margin: 0;
+        font-size: clamp(1.6rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--accent);
+        transition: color 0.85s ease;
+      }
+
+      .stat-card-label {
+        margin: 0.2rem 0 0;
+        font-size: 0.82rem;
+        color: rgba(255, 255, 255, 0.55);
+      }
+
+      .stat-card-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent);
+        opacity: 0;
+        transition: opacity 0.25s ease, background 0.85s ease;
+      }
+
+      .stat-card:hover .stat-card-bar {
+        opacity: 1;
+      }
+
+      @media (max-width: 640px) {
+        .faculty-grid { grid-template-columns: 1fr; }
+        .posts-grid { grid-template-columns: 1fr; }
+        .stats-row { grid-template-columns: repeat(2, 1fr); }
+      }
+
       @media (prefers-reduced-motion: reduce) {
+        .hero-photo::before {
+          filter: blur(3px) brightness(0.48);
+          transform: scale(1.01);
+        }
+
+        .feature-card {
+          background: rgba(15, 23, 42, 0.94);
+        }
+
+        .big-search {
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          background: rgba(10, 16, 28, 0.92);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+        }
+
         .hero-text-stage.dept-text-out .hero-magic,
         .feature-card-text.dept-text-out .feat-magic {
           filter: none;
@@ -1139,8 +1489,8 @@
   </head>
   <body>
     <div class="hero-photo" aria-hidden="true"></div>
-    <div class="bg-scene" aria-hidden="true"></div>
     <div class="shell">
+      <div class="hero-wrap">
       <div class="util">
         <div class="util-links">
           <a href="#">Apply Now</a>
@@ -1150,7 +1500,7 @@
           <a href="#">Alumni</a>
         </div>
         <div class="util-search" role="search">
-          <span aria-hidden="true">⌕</span>
+          <span class="util-search-icon" aria-hidden="true">✦</span>
           <span>Quick search</span>
         </div>
       </div>
@@ -1188,6 +1538,7 @@
         </div>
       </div>
 
+      <div class="hero-shell">
       <main class="hero">
         <div class="hero-copy">
           <div class="hero-text-stage" id="heroTextStage">
@@ -1202,7 +1553,7 @@
           </div>
         </div>
 
-        <div>
+        <div class="hero-media-col">
           <div class="feature-card">
             <div class="feature-card-visual" id="featureVisual" role="img" aria-label="Department animation preview">
               <div class="fx-stack" aria-hidden="true">
@@ -1249,24 +1600,132 @@
           </div>
         </div>
       </main>
-
-      <div class="bottom-bar">
-        <div class="socials" aria-label="Social links">
-          <a href="#" title="LinkedIn">in</a>
-          <a href="#" title="Facebook">f</a>
-          <a href="#" title="Instagram">◎</a>
-          <a href="#" title="YouTube">▶</a>
-          <a href="#" title="X">𝕏</a>
-          <a href="#" title="WhatsApp">⌁</a>
-        </div>
-        <div class="big-search">
-          <input type="search" id="heroSearch" placeholder="" autocomplete="off" />
-          <button type="button" aria-label="Search">→</button>
-        </div>
       </div>
 
+      <div class="bottom-bar">
+        <div class="big-search">
+          <input type="search" id="heroSearch" placeholder="" autocomplete="off" />
+          <button type="button" class="big-search-send" aria-label="Search">↑</button>
+        </div>
+      </div>
+      </div><!-- /.hero-wrap -->
+
+      <!-- ═══════════ Below-hero content ═══════════ -->
+      <div class="content-area">
+
+        <!-- Faculty -->
+        <section class="content-section">
+          <div class="section-header">
+            <span class="section-label">Faculty</span>
+            <h2 class="section-title">Meet Our Experts</h2>
+            <span class="section-divider"></span>
+          </div>
+          <div class="faculty-grid" id="facultyGrid">
+            <div class="faculty-card">
+              <span class="faculty-avatar">👨‍💻</span>
+              <div class="faculty-info">
+                <p class="faculty-name">Dr. Nazmul Hasan</p>
+                <p class="faculty-role">Head of Dept · AI &amp; ML</p>
+              </div>
+            </div>
+            <div class="faculty-card">
+              <span class="faculty-avatar">👩‍🔬</span>
+              <div class="faculty-info">
+                <p class="faculty-name">Dr. Farhana Ahmed</p>
+                <p class="faculty-role">Professor · Networks</p>
+              </div>
+            </div>
+            <div class="faculty-card">
+              <span class="faculty-avatar">🧑‍🏫</span>
+              <div class="faculty-info">
+                <p class="faculty-name">Md. Tanvir Rahman</p>
+                <p class="faculty-role">Assoc. Professor · SE</p>
+              </div>
+            </div>
+            <div class="faculty-card">
+              <span class="faculty-avatar">👩‍💼</span>
+              <div class="faculty-info">
+                <p class="faculty-name">Sabrina Sultana</p>
+                <p class="faculty-role">Asst. Professor · HCI</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Latest Posts -->
+        <section class="content-section">
+          <div class="section-header">
+            <span class="section-label">Latest</span>
+            <h2 class="section-title">News &amp; Events</h2>
+            <span class="section-divider"></span>
+          </div>
+          <div class="posts-grid" id="postsGrid">
+            <article class="post-card">
+              <div class="post-meta">
+                <span class="post-tag">Event</span>
+                <span class="post-date">Apr 10, 2026</span>
+              </div>
+              <h3 class="post-title">ICPC Dhaka Regional Prelim Results Out</h3>
+              <p class="post-excerpt">Three UAP teams advance to the Asia-West final round — our best showing since 2019.</p>
+            </article>
+            <article class="post-card">
+              <div class="post-meta">
+                <span class="post-tag">Notice</span>
+                <span class="post-date">Apr 6, 2026</span>
+              </div>
+              <h3 class="post-title">Spring 2026 Lab Registration Open</h3>
+              <p class="post-excerpt">Register for AI/ML Lab, Networking Lab, and Software Project before seats fill up.</p>
+            </article>
+            <article class="post-card">
+              <div class="post-meta">
+                <span class="post-tag">Workshop</span>
+                <span class="post-date">Mar 28, 2026</span>
+              </div>
+              <h3 class="post-title">Cloud &amp; DevOps Weekend Bootcamp</h3>
+              <p class="post-excerpt">Industry-led workshop covering Docker, K8s, and CI/CD — 40 students attended.</p>
+            </article>
+          </div>
+        </section>
+
+        <!-- Research Stats -->
+        <section class="content-section">
+          <div class="section-header">
+            <span class="section-label">Research</span>
+            <h2 class="section-title">By the Numbers</h2>
+            <span class="section-divider"></span>
+          </div>
+          <div class="stats-row" id="statsRow">
+            <div class="stat-card">
+              <div class="stat-card-icon">📄</div>
+              <p class="stat-card-value" id="statPub">128+</p>
+              <p class="stat-card-label" id="statPubLabel">Publications (IEEE, ACM, Springer)</p>
+              <span class="stat-card-bar"></span>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon">🔬</div>
+              <p class="stat-card-value" id="statLab">6</p>
+              <p class="stat-card-label" id="statLabLabel">Active Research Labs</p>
+              <span class="stat-card-bar"></span>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon">🎓</div>
+              <p class="stat-card-value" id="statThesis">34</p>
+              <p class="stat-card-label" id="statThesisLabel">Ongoing Thesis Projects</p>
+              <span class="stat-card-bar"></span>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon">🤝</div>
+              <p class="stat-card-value" id="statCollab">12</p>
+              <p class="stat-card-label" id="statCollabLabel">Industry &amp; University Collaborations</p>
+              <span class="stat-card-bar"></span>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /.content-area -->
+
       <p class="demo-note">
-        Demo: colors, gradients, hero photo, and the right-hand card’s motion graphics all switch with department.
+        Demo: full-bleed UAP campus photo with a light blur, frosted UI, department colors on controls and the right-hand card.
         Content is illustrative.
       </p>
     </div>
@@ -1286,6 +1745,23 @@
             featureSub: "Competitive programming with teams across Bangladesh",
             search: "Search faculty, courses, notices, events, clubs…",
             animAria: "Animated preview: cyan code grid, data rain, and horizontal scan line",
+            faculty: [
+              { emoji: "👨‍💻", name: "Dr. Nazmul Hasan", role: "Head of Dept · AI & ML" },
+              { emoji: "👩‍🔬", name: "Dr. Farhana Ahmed", role: "Professor · Networks" },
+              { emoji: "🧑‍🏫", name: "Md. Tanvir Rahman", role: "Assoc. Professor · SE" },
+              { emoji: "👩‍💼", name: "Sabrina Sultana", role: "Asst. Professor · HCI" },
+            ],
+            posts: [
+              { tag: "Event", date: "Apr 10, 2026", title: "ICPC Dhaka Regional Prelim Results Out", excerpt: "Three UAP teams advance to the Asia-West final round — our best showing since 2019." },
+              { tag: "Notice", date: "Apr 6, 2026", title: "Spring 2026 Lab Registration Open", excerpt: "Register for AI/ML Lab, Networking Lab, and Software Project before seats fill up." },
+              { tag: "Workshop", date: "Mar 28, 2026", title: "Cloud & DevOps Weekend Bootcamp", excerpt: "Industry-led workshop covering Docker, K8s, and CI/CD — 40 students attended." },
+            ],
+            stats: [
+              { icon: "📄", value: "128+", label: "Publications (IEEE, ACM, Springer)" },
+              { icon: "🔬", value: "6", label: "Active Research Labs" },
+              { icon: "🎓", value: "34", label: "Ongoing Thesis Projects" },
+              { icon: "🤝", value: "12", label: "Industry & University Collaborations" },
+            ],
           },
           eee: {
             brand: "EEE",
@@ -1297,6 +1773,23 @@
             featureSub: "Partnerships with utilities and OEMs for senior design",
             search: "Search faculty, labs, thesis topics, industry projects…",
             animAria: "Animated preview: orange electric rings and moving waveform",
+            faculty: [
+              { emoji: "⚡", name: "Dr. Rafiq Uddin", role: "Head of Dept · Power Systems" },
+              { emoji: "🔌", name: "Dr. Meher Nigar", role: "Professor · VLSI Design" },
+              { emoji: "🛰️", name: "Ashraf Karim", role: "Assoc. Professor · Telecom" },
+              { emoji: "🔋", name: "Tania Begum", role: "Asst. Professor · Renewables" },
+            ],
+            posts: [
+              { tag: "News", date: "Apr 8, 2026", title: "Smart Grid Research Wins Best Paper", excerpt: "Faculty-led paper on microgrid optimization awarded at IEEE PES General Meeting." },
+              { tag: "Event", date: "Mar 22, 2026", title: "Industry Day: Power Sector Partners Visit", excerpt: "Engineers from PGCB and BPDB toured labs and discussed internship pathways." },
+              { tag: "Notice", date: "Mar 15, 2026", title: "Final Year Project Proposal Deadline Extended", excerpt: "Submit your power electronics or embedded systems proposals by April 1." },
+            ],
+            stats: [
+              { icon: "📄", value: "95+", label: "Publications (IEEE, IET)" },
+              { icon: "⚙️", value: "42", label: "Labs & Project Studios" },
+              { icon: "🎓", value: "28", label: "Ongoing Thesis Projects" },
+              { icon: "🏭", value: "18", label: "Industry Partnerships" },
+            ],
           },
           civil: {
             brand: "Civil",
@@ -1308,6 +1801,23 @@
             featureSub: "Site visits, GIS, and capstone projects with industry mentors",
             search: "Search faculty, courses, thesis, field manuals…",
             animAria: "Animated preview: blueprint grid, panning lines, and survey crosshair",
+            faculty: [
+              { emoji: "🏗️", name: "Dr. Kamrul Islam", role: "Head of Dept · Structural" },
+              { emoji: "🌊", name: "Dr. Anika Chowdhury", role: "Professor · Water Resources" },
+              { emoji: "🛤️", name: "Fahim Shahriar", role: "Assoc. Professor · Transport" },
+              { emoji: "🪨", name: "Sharmin Akter", role: "Asst. Professor · Geotech" },
+            ],
+            posts: [
+              { tag: "Field Trip", date: "Apr 4, 2026", title: "Padma Bridge Study Tour Completed", excerpt: "60 students visited the bridge site to study foundation design and river training works." },
+              { tag: "Seminar", date: "Mar 18, 2026", title: "Earthquake-Resistant Design Workshop", excerpt: "BNBC code updates discussed with practicing structural engineers from Dhaka." },
+              { tag: "Notice", date: "Mar 10, 2026", title: "Survey Camp Registration Open", excerpt: "Annual 10-day camp covers total station, GPS, and GIS — limited to 50 spots." },
+            ],
+            stats: [
+              { icon: "📄", value: "74+", label: "Publications (ASCE, Elsevier)" },
+              { icon: "🧪", value: "8", label: "Material & Soil Testing Labs" },
+              { icon: "🎓", value: "22", label: "Ongoing Thesis Projects" },
+              { icon: "🏢", value: "15", label: "Consulting & Industry Projects" },
+            ],
           },
           pharmacy: {
             brand: "Pharmacy",
@@ -1319,6 +1829,23 @@
             featureSub: "Hands-on dispensing, compounding, and community outreach",
             search: "Search faculty, courses, clerkships, licensing prep…",
             animAria: "Animated preview: green heartbeat cross and expanding pulse rings",
+            faculty: [
+              { emoji: "💊", name: "Dr. Sohel Rana", role: "Head of Dept · Pharma Chem" },
+              { emoji: "🧬", name: "Dr. Nasreen Jahan", role: "Professor · Pharmacology" },
+              { emoji: "🔬", name: "Rakib Hassan", role: "Assoc. Professor · Formulation" },
+              { emoji: "🩺", name: "Nusrat Zaman", role: "Asst. Professor · Clinical" },
+            ],
+            posts: [
+              { tag: "Research", date: "Apr 12, 2026", title: "Novel Drug Delivery Paper in Nature Scientific Reports", excerpt: "Nanoparticle-based targeted delivery shows 3x bioavailability improvement in trials." },
+              { tag: "Event", date: "Mar 30, 2026", title: "World Pharmacist Day Celebration", excerpt: "Free health screening camp served 200+ community members near campus." },
+              { tag: "Notice", date: "Mar 20, 2026", title: "Hospital Clerkship Slots Available", excerpt: "Apply for clinical rotations at Holy Family, BIRDEM, and Square Hospital." },
+            ],
+            stats: [
+              { icon: "📄", value: "86+", label: "Publications (Elsevier, MDPI)" },
+              { icon: "🧫", value: "10", label: "Pharma Research Labs" },
+              { icon: "🎓", value: "26", label: "Ongoing Thesis Projects" },
+              { icon: "🏥", value: "8", label: "Hospital & Industry Tie-ups" },
+            ],
           },
           arch: {
             brand: "ARCH",
@@ -1330,6 +1857,23 @@
             featureSub: "Open studios, pin-ups, and guest critics from practice",
             search: "Search faculty, studios, electives, exhibition archives…",
             animAria: "Animated preview: perspective floor grid and pulsing frame outline",
+            faculty: [
+              { emoji: "🏛️", name: "Ar. Zahin Mahbub", role: "Head of Dept · Urban Design" },
+              { emoji: "✏️", name: "Dr. Samia Rahim", role: "Professor · Theory & History" },
+              { emoji: "🏠", name: "Ar. Nurul Afsar", role: "Assoc. Professor · Housing" },
+              { emoji: "🌿", name: "Tasfia Noor", role: "Asst. Professor · Landscape" },
+            ],
+            posts: [
+              { tag: "Exhibition", date: "Apr 5, 2026", title: "Year-End Thesis Exhibition Opens to Public", excerpt: "42 graduating students present design projects spanning housing, heritage, and urbanism." },
+              { tag: "Workshop", date: "Mar 25, 2026", title: "Digital Fabrication: CNC & 3D Printing", excerpt: "Hands-on session on parametric modeling and rapid prototyping for studio projects." },
+              { tag: "Notice", date: "Mar 12, 2026", title: "Summer Design Camp Applications Open", excerpt: "Two-week intensive for 2nd and 3rd year students focusing on community design-build." },
+            ],
+            stats: [
+              { icon: "📄", value: "52+", label: "Publications & Exhibited Works" },
+              { icon: "🖥️", value: "5", label: "Design Studios & Fab Labs" },
+              { icon: "🎓", value: "42", label: "Thesis Design Projects" },
+              { icon: "🏆", value: "9", label: "National Design Awards" },
+            ],
           },
         };
 
@@ -1349,6 +1893,7 @@
           "--accent-soft",
           "--title-a",
           "--title-b",
+          "--title-end",
           "--cta",
           "--cta-hover",
           "--card-stop-a",
@@ -1363,7 +1908,8 @@
             "--accent": "#22d3ee",
             "--accent-soft": "rgba(34, 211, 238, 0.22)",
             "--title-a": "#67e8f9",
-            "--title-b": "#a5f3fc",
+            "--title-b": "#22d3ee",
+            "--title-end": "#abeef9",
             "--cta": "#0e7490",
             "--cta-hover": "#22d3ee",
             "--card-stop-a": "#083344",
@@ -1375,8 +1921,9 @@
             "--glow-b": "#f97316",
             "--accent": "#fb923c",
             "--accent-soft": "rgba(251, 146, 60, 0.2)",
-            "--title-a": "#fdba74",
-            "--title-b": "#fed7aa",
+            "--title-a": "#fed7aa",
+            "--title-b": "#fb923c",
+            "--title-end": "#ffedd5",
             "--cta": "#ea580c",
             "--cta-hover": "#c2410c",
             "--card-stop-a": "#7c2d12",
@@ -1388,8 +1935,9 @@
             "--glow-b": "#78716c",
             "--accent": "#d6d3d1",
             "--accent-soft": "rgba(214, 211, 209, 0.15)",
-            "--title-a": "#d6d3d1",
-            "--title-b": "#a8a29e",
+            "--title-a": "#f5f5f4",
+            "--title-b": "#d6d3d1",
+            "--title-end": "#fafaf9",
             "--cta": "#57534e",
             "--cta-hover": "#44403c",
             "--card-stop-a": "#292524",
@@ -1403,6 +1951,7 @@
             "--accent-soft": "rgba(52, 211, 153, 0.2)",
             "--title-a": "#6ee7b7",
             "--title-b": "#34d399",
+            "--title-end": "#d1fae5",
             "--cta": "#059669",
             "--cta-hover": "#047857",
             "--card-stop-a": "#022c22",
@@ -1416,6 +1965,7 @@
             "--accent-soft": "rgba(251, 113, 133, 0.2)",
             "--title-a": "#fecdd3",
             "--title-b": "#fdba74",
+            "--title-end": "#fff1f2",
             "--cta": "#ea580c",
             "--cta-hover": "#c2410c",
             "--card-stop-a": "#4c0519",
@@ -1553,6 +2103,42 @@
           deptColorAnimFrame = requestAnimationFrame(step);
         }
 
+        function escHtml(s) {
+          return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function renderFaculty(list) {
+          var grid = document.getElementById("facultyGrid");
+          if (!grid || !list) return;
+          grid.innerHTML = list.map(function (f) {
+            return '<div class="faculty-card"><span class="faculty-avatar">' + f.emoji +
+              '</span><div class="faculty-info"><p class="faculty-name">' + escHtml(f.name) +
+              '</p><p class="faculty-role">' + escHtml(f.role) + '</p></div></div>';
+          }).join("");
+        }
+
+        function renderPosts(list) {
+          var grid = document.getElementById("postsGrid");
+          if (!grid || !list) return;
+          grid.innerHTML = list.map(function (p) {
+            return '<article class="post-card"><div class="post-meta"><span class="post-tag">' +
+              escHtml(p.tag) + '</span><span class="post-date">' + escHtml(p.date) +
+              '</span></div><h3 class="post-title">' + escHtml(p.title) +
+              '</h3><p class="post-excerpt">' + escHtml(p.excerpt) + '</p></article>';
+          }).join("");
+        }
+
+        function renderStats(list) {
+          var row = document.getElementById("statsRow");
+          if (!row || !list) return;
+          row.innerHTML = list.map(function (s) {
+            return '<div class="stat-card"><div class="stat-card-icon">' + s.icon +
+              '</div><p class="stat-card-value">' + escHtml(s.value) +
+              '</p><p class="stat-card-label">' + escHtml(s.label) +
+              '</p><span class="stat-card-bar"></span></div>';
+          }).join("");
+        }
+
         function applyDeptText(id) {
           var d = DEPTS[id];
           if (!d) return;
@@ -1564,6 +2150,9 @@
           document.getElementById("featureSub").textContent = d.featureSub;
           heroSearch.placeholder = d.search;
           document.getElementById("featureVisual").setAttribute("aria-label", d.animAria || "Department highlight");
+          renderFaculty(d.faculty);
+          renderPosts(d.posts);
+          renderStats(d.stats);
         }
 
         function syncDeptControls(id) {
@@ -1640,6 +2229,7 @@
         });
 
         setDept("cse", true);
+
       })();
     </script>
   </body>
